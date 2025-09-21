@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as Tone from 'tone';
 import './App.css';
+import './components/FrequencySpectrum.css';
 
 
 import Sequencer from './components/Sequencer';
@@ -63,7 +64,7 @@ function App() {
             <Transport {...drumMachine} />
             <Patterns {...drumMachine} predefinedPatterns={drumMachine.predefinedPatterns} />
             <Sequencer {...drumMachine} drumSounds={drumSounds} />
-            <Visualizer analyser={drumMachine.analyser} />
+            <Visualizer {...drumMachine} />
           </div>
           <div className="right-column">
             <Mixer {...drumMachine} drumSounds={drumSounds} />

@@ -1,53 +1,61 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import * as Tone from 'tone';
 
-const Visualizer = ({ analyser }) => {
-  const canvasRef = useRef(null);
+const FrequencySpectrum = ({ isPlaying = false, masterVolume = 0, analyser }) => {
+  const animationRef = useRef(null);
+  const [frequencyData, setFrequencyData] = useState(new Array(64).fill(0));
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let animationFrameId;
-
-    const draw = () => {
-      animationFrameId = requestAnimationFrame(draw);
-
-      if (analyser) {
-        const frequencies = analyser.getValue();
-        const bufferLength = frequencies.length;
-        const barWidth = (canvas.width / bufferLength);
-        let barHeight;
-        let x = 0;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        for (let i = 0; i < bufferLength; i++) {
-          barHeight = (frequencies[i] + 140) * 1.5;
-
-          const r = barHeight + (25 * (i / bufferLength));
-          const g = 250 * (i / bufferLength);
-          const b = 50;
-
-          ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
-          ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
-          x += barWidth;
+    const updateVisualization = () => {
+      if (isPlaying && analyser) {
+        const fftData = analyser.getValue();
+        const processedData = new Array(64);
+        for (let i = 0; i < 64; i++) {
+          const value = fftData[i * 2] || -100;
+          const height = Math.max(0, Math.min(100, (value + 100) * 2.5));
+          processedData[i] = height;
         }
+        setFrequencyData(processedData);
+      }
+
+      if (isPlaying) {
+        animationRef.current = requestAnimationFrame(updateVisualization);
       }
     };
 
-    draw();
+    if (isPlaying) {
+      updateVisualization();
+    } else {
+      setFrequencyData(new Array(64).fill(0));
+    }
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
-  }, [analyser]);
+  }, [isPlaying, analyser]);
 
   return (
-    <div className="visualizer-card">
-      <h3>Visualizer</h3>
-      <canvas ref={canvasRef} width="150" height="150" />
+    <div className="frequency-spectrum">
+      <div className="spectrum-header">
+        <h3>FREQUENCY SPECTRUM</h3>
+        <span className={`status ${isPlaying ? 'active' : 'idle'}`}>
+          {isPlaying ? '● ANALYZING' : '○ READY'}
+        </span>
+      </div>
+      
+      <div className="spectrum-bars">
+        {frequencyData.map((height, index) => (
+          <div
+            key={index}
+            className="freq-bar"
+            style={{ height: `${height}%` }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
-export default Visualizer;
+export default FrequencySpectrum;

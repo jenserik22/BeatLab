@@ -1,0 +1,79 @@
+.frequency-spectrum {
+  background: linear-gradient(135deg, rgba(255, 0, 110, 0.05), rgba(131, 56, 236, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  color: white;
+}
+
+.spectrum-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.spectrum-header h3 {
+  font-size: 0.9rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.status {
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+
+.status.active {
+  color: #00ff88;
+}
+
+.status.idle {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.spectrum-bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  height: 120px;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.freq-bar {
+  flex: 1;
+  background: linear-gradient(to top,
+    rgba(0, 255, 255, 0.2),
+    rgba(131, 56, 236, 0.6),
+    rgba(255, 0, 110, 0.8),
+    rgba(255, 255, 255, 1)
+  );
+  border-radius: 4px;
+  transition: height 0.1s ease;
+  min-height: 5px;
+}
+
+.freq-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.freq-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .frequency-spectrum {
+    padding: 15px;
+    margin: 10px 0;
+  }
+  
+  .spectrum-bars {
+    height: 80px;
+  }
+}
