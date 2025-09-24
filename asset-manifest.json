@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/BeatLab/static/css/main.68eea737.css",
+    "main.js": "/BeatLab/static/js/main.a71ad3d1.js",
+    "static/js/453.593297dc.chunk.js": "/BeatLab/static/js/453.593297dc.chunk.js",
+    "index.html": "/BeatLab/index.html",
+    "main.68eea737.css.map": "/BeatLab/static/css/main.68eea737.css.map",
+    "main.a71ad3d1.js.map": "/BeatLab/static/js/main.a71ad3d1.js.map",
+    "453.593297dc.chunk.js.map": "/BeatLab/static/js/453.593297dc.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.68eea737.css",
+    "static/js/main.a71ad3d1.js"
+  ]
+}

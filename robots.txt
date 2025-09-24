@@ -1,0 +1,4 @@
+# This file tells web crawlers which pages or files they can or cannot request from the site.
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
