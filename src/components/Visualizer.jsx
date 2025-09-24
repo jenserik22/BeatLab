@@ -1,32 +1,59 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 
-const FrequencySpectrum = ({ isPlaying = false, masterVolume = 0, analyser }) => {
+const FrequencySpectrum = ({ isPlaying = false, analyser }) => {
+  const canvasRef = useRef(null);
   const animationRef = useRef(null);
-  const [frequencyData, setFrequencyData] = useState(new Array(64).fill(0));
+  const prevHeightsRef = useRef(new Array(64).fill(0));
+  const barCount = 64;
+  const topPaddingRatio = 0.1; // 10% padding at the top
+  const smoothing = 0.6; // 0 = no smoothing, 1 = very slow
 
   useEffect(() => {
-    const updateVisualization = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       if (isPlaying && analyser) {
         const fftData = analyser.getValue();
-        const processedData = new Array(64);
-        for (let i = 0; i < 64; i++) {
+        const barWidth = canvas.width / barCount;
+        const topPadding = canvas.height * topPaddingRatio;
+        const maxBarHeight = canvas.height - topPadding;
+        const prevHeights = prevHeightsRef.current;
+
+        for (let i = 0; i < barCount; i++) {
           const value = fftData[i * 2] || -100;
           const height = Math.max(0, Math.min(100, (value + 100) * 2.5));
-          processedData[i] = height;
+          const barHeight = (height / 100) * maxBarHeight;
+
+          // Smooth the bar height
+          prevHeights[i] = prevHeights[i] * smoothing + barHeight * (1 - smoothing);
+
+          const x = i * barWidth;
+          const y = canvas.height - prevHeights[i];
+
+          // Create a vertical gradient for each bar
+          const gradient = ctx.createLinearGradient(x, y, x, y + prevHeights[i]);
+          gradient.addColorStop(0, '#00ffff'); // Top: cyan
+          gradient.addColorStop(1, '#ff00ff'); // Bottom: magenta
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x + 2, y, barWidth - 4, prevHeights[i]);
         }
-        setFrequencyData(processedData);
       }
 
       if (isPlaying) {
-        animationRef.current = requestAnimationFrame(updateVisualization);
+        animationRef.current = requestAnimationFrame(draw);
       }
     };
 
     if (isPlaying) {
-      updateVisualization();
+      draw();
     } else {
-      setFrequencyData(new Array(64).fill(0));
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      prevHeightsRef.current = new Array(barCount).fill(0);
     }
 
     return () => {
@@ -44,16 +71,12 @@ const FrequencySpectrum = ({ isPlaying = false, masterVolume = 0, analyser }) =>
           {isPlaying ? '● ANALYZING' : '○ READY'}
         </span>
       </div>
-      
-      <div className="spectrum-bars">
-        {frequencyData.map((height, index) => (
-          <div
-            key={index}
-            className="freq-bar"
-            style={{ height: `${height}%` }}
-          />
-        ))}
-      </div>
+      <canvas
+        ref={canvasRef}
+        width={640}
+        height={120}
+        style={{ width: '100%', height: '120px', background: '#222' }}
+      />
     </div>
   );
 };
