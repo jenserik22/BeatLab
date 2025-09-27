@@ -1,6 +1,7 @@
 {
   "name": "beatlab",
   "version": "0.1.0",
+  "homepage": "https://jenserik22.github.io/BeatLab/",
   "private": true,
   "dependencies": {
     "@playwright/test": "^1.55.0",
@@ -18,7 +19,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"   
   },
   "eslintConfig": {
     "extends": [
@@ -42,5 +45,8 @@
     "transformIgnorePatterns": [
       "node_modules/(?!tone)/"
     ]
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }

@@ -460,7 +460,27 @@ export const useDrumMachine = (drumSounds) => {
   };
 
   const loadPattern = useCallback((patternName, patternData) => {
-    setPattern(patternData);
+    if (patternData.pattern) { // Check for new format
+      setPattern(patternData.pattern);
+      setDrumVolumes(patternData.drumVolumes);
+      setMasterVolume(patternData.masterVolume);
+      setFilterFreq(patternData.filterFreq);
+      setFilterQ(patternData.filterQ);
+      setLoop1Playing(patternData.loop1Playing);
+      setLoop1Volume(patternData.loop1Volume);
+      setLoop2Playing(patternData.loop2Playing);
+      setLoop2Volume(patternData.loop2Volume);
+      setLoop3Playing(patternData.loop3Playing);
+      setLoop3Volume(patternData.loop3Volume);
+      setLoop4Playing(patternData.loop4Playing);
+      setLoop4Volume(patternData.loop4Volume);
+      setLoop5Playing(patternData.loop5Playing);
+      setLoop5Volume(patternData.loop5Volume);
+      setLoop6Playing(patternData.loop6Playing);
+      setLoop6Volume(patternData.loop6Volume);
+    } else { // For backward compatibility
+      setPattern(patternData);
+    }
     setCurrentPatternName(patternName);
     handleStop(); // Stop playback when changing pattern
   }, [handleStop]);
@@ -468,7 +488,26 @@ export const useDrumMachine = (drumSounds) => {
   const savePattern = () => {
     const patternName = prompt('Enter a name for your pattern:');
     if (patternName) {
-      const newSavedPatterns = { ...savedPatterns, [patternName]: pattern };
+      const patternData = {
+        pattern,
+        drumVolumes,
+        masterVolume,
+        filterFreq,
+        filterQ,
+        loop1Playing,
+        loop1Volume,
+        loop2Playing,
+        loop2Volume,
+        loop3Playing,
+        loop3Volume,
+        loop4Playing,
+        loop4Volume,
+        loop5Playing,
+        loop5Volume,
+        loop6Playing,
+        loop6Volume,
+      };
+      const newSavedPatterns = { ...savedPatterns, [patternName]: patternData };
       setSavedPatterns(newSavedPatterns);
       localStorage.setItem('beatLabSavedPatterns', JSON.stringify(newSavedPatterns));
       setCurrentPatternName(patternName);
