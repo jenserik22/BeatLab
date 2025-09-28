@@ -36,8 +36,8 @@ const FrequencySpectrum = ({ isPlaying = false, analyser }) => {
 
           // Create a vertical gradient for each bar
           const gradient = ctx.createLinearGradient(x, y, x, y + prevHeights[i]);
-          gradient.addColorStop(0, '#00ffff'); // Top: cyan
-          gradient.addColorStop(1, '#ff00ff'); // Bottom: magenta
+          gradient.addColorStop(0, '#ff00ff'); // Top: magenta
+          gradient.addColorStop(1, '#00ffff'); // Bottom: cyan
 
           ctx.fillStyle = gradient;
           ctx.fillRect(x + 2, y, barWidth - 4, prevHeights[i]);
