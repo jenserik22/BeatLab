@@ -7,8 +7,13 @@
 
 # testing
 /coverage
-/plan
-.playwright-mcp/
+/.playwright-mcp/
+
+# plan artifacts
+/plan/*
+!/plan/
+!/plan/progress.json
+!/plan/refactor_plan.md
 
 # production
 /build

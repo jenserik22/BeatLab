@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
 
+const DEBUG = false;
+const debugLog = (...args) => {
+  if (DEBUG) {
+    console.log(...args);
+  }
+};
+
 export const useDrumMachine = (drumSounds) => {
   const createEmptyPattern = () => {
     const emptyPattern = {};
@@ -74,6 +81,7 @@ export const useDrumMachine = (drumSounds) => {
   // Refs for Tone.js instruments
   const synths = useRef({});
   const sequenceRef = useRef(null); // Ref to store the Tone.Sequence instance
+  const effectNodesRef = useRef([]);
 
   // Use a ref to store the latest pattern state for the Tone.Sequence callback
   const patternRef = useRef(pattern);
@@ -122,6 +130,7 @@ export const useDrumMachine = (drumSounds) => {
   const loop6 = useRef(null);
 
   const loopRefs = [loop1, loop2, loop3, loop4, loop5, loop6];
+  const loopSynthRefs = [loop1Synth, loop2Synth, loop3Synth, loop4Synth, loop5Synth, loop6Synth];
 
   const [filterFreq, setFilterFreq] = useState(20000);
   const [filterQ, setFilterQ] = useState(1);
@@ -133,13 +142,33 @@ export const useDrumMachine = (drumSounds) => {
 
   // Initialize Tone.js instruments once
   useEffect(() => {
-    console.log('Initializing Tone.js instruments...');
+    debugLog('Initializing Tone.js instruments...');
 
-    masterVol.current = new Tone.Volume(-10).toDestination();
-    filter.current = new Tone.Filter(filterFreq, 'lowpass').connect(masterVol.current);
+    effectNodesRef.current = [];
+
+    const registerEffectNode = (node) => {
+      effectNodesRef.current.push(node);
+      return node;
+    };
+
+    const masterVolumeNode = new Tone.Volume(-10);
+    if (typeof masterVolumeNode.toDestination === 'function') {
+      masterVolumeNode.toDestination();
+    } else if (typeof masterVolumeNode.connect === 'function' && Tone.Destination) {
+      masterVolumeNode.connect(Tone.Destination);
+    } else {
+      debugLog('Skipping Tone initialization: master volume routing unavailable.');
+      masterVolumeNode.dispose?.();
+      return () => {};
+    }
+    registerEffectNode(masterVolumeNode);
+    masterVol.current = masterVolumeNode;
+
+    filter.current = registerEffectNode(new Tone.Filter(filterFreq, 'lowpass').connect(masterVol.current));
     analyserRef.current = new Tone.Analyser('fft', 256);
     masterVol.current.connect(analyserRef.current);
 
+    drumVols.current = {};
     drumSounds.forEach(sound => {
       drumVols.current[sound.name] = new Tone.Volume(drumVolumes[sound.name]).connect(filter.current);
     });
@@ -175,10 +204,11 @@ export const useDrumMachine = (drumSounds) => {
         envelope: { attack: 0.005, decay: 0.3, sustain: 0, release: 0.1 }
       }).connect(drumVols.current['Tom High']),
     };
-    console.log('Tone.js instruments initialized.');
+    debugLog('Tone.js instruments initialized.');
 
-    const chorus = new Tone.Chorus(4, 2.5, 0.5).connect(masterVol.current).start();
-    const delay = new Tone.FeedbackDelay("8n", 0.5).connect(chorus);
+    const chorus = registerEffectNode(new Tone.Chorus(4, 2.5, 0.5).connect(masterVol.current));
+    chorus.start();
+    const delay = registerEffectNode(new Tone.FeedbackDelay("8n", 0.5).connect(chorus));
     loop1Synth.current = new Tone.FMSynth({
       harmonicity: 3,
       modulationIndex: 10,
@@ -244,8 +274,8 @@ export const useDrumMachine = (drumSounds) => {
     loop2.current.loop = true;
     loop2.current.loopEnd = "2m";
 
-    const technoFilter = new Tone.Filter(1200, "lowpass").connect(masterVol.current);
-    const technoDistortion = new Tone.Distortion(0.4).connect(technoFilter);
+    const technoFilter = registerEffectNode(new Tone.Filter(1200, "lowpass").connect(masterVol.current));
+    const technoDistortion = registerEffectNode(new Tone.Distortion(0.4).connect(technoFilter));
     loop3Synth.current = new Tone.MonoSynth({
       oscillator: {
         type: "sawtooth"
@@ -274,7 +304,7 @@ export const useDrumMachine = (drumSounds) => {
     loop3.current.loop = true;
     loop3.current.loopEnd = "2m";
 
-    const padFilter = new Tone.Filter(200, "lowpass").connect(masterVol.current);
+    const padFilter = registerEffectNode(new Tone.Filter(200, "lowpass").connect(masterVol.current));
     loop4Synth.current = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 1,
       modulationIndex: 10,
@@ -311,7 +341,7 @@ export const useDrumMachine = (drumSounds) => {
     loop4.current.loop = true;
     loop4.current.loopEnd = "4m";
 
-    const pluckReverb = new Tone.Reverb(5).connect(masterVol.current);
+    const pluckReverb = registerEffectNode(new Tone.Reverb(5).connect(masterVol.current));
     loop5Synth.current = new Tone.PluckSynth().connect(pluckReverb);
 
     const pluckNotes = [
@@ -338,7 +368,7 @@ export const useDrumMachine = (drumSounds) => {
     loop5.current.loop = true;
     loop5.current.loopEnd = "2m";
 
-    const bitCrusher = new Tone.BitCrusher(4).connect(masterVol.current);
+    const bitCrusher = registerEffectNode(new Tone.BitCrusher(4).connect(masterVol.current));
     loop6Synth.current = new Tone.NoiseSynth({
       noise: {
         type: "white"
@@ -369,7 +399,7 @@ export const useDrumMachine = (drumSounds) => {
       { time: "3:3:0" },
     ];
     loop6.current = new Tone.Part((time) => {
-      loop6Synth.current.triggerAttack(time);
+      loop6Synth.current.triggerAttackRelease("16n", time);
     }, glitchPattern);
     loop6.current.loop = true;
     loop6.current.loopEnd = "2m";
@@ -383,7 +413,7 @@ export const useDrumMachine = (drumSounds) => {
             if (sound.type === 'membrane') {
               synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time);
             } else if (sound.type === 'noise') {
-              synths.current[sound.name].triggerAttack(time);
+              synths.current[sound.name].triggerAttackRelease('8n', time);
             }
           }
         });
@@ -391,30 +421,72 @@ export const useDrumMachine = (drumSounds) => {
       Array.from({ length: 16 }, (_, i) => i),
       '16n'
     ).start(0);
-    console.log('Tone.Sequence set up.');
+    debugLog('Tone.Sequence set up.');
 
     // Set loop points for the transport
     Tone.Transport.loop = true;
     Tone.Transport.loopEnd = '4m'; // Loop every 4 measures (16 steps at 16n)
 
     return () => {
-      console.log('Disposing Tone.js instruments and sequence...');
+      debugLog('Disposing Tone.js instruments and sequence...');
+
+      Tone.Transport.stop();
+      Tone.Transport.cancel(0);
+
       if (sequenceRef.current) {
+        sequenceRef.current.stop();
         sequenceRef.current.dispose();
+        sequenceRef.current = null;
       }
+
       loopRefs.forEach(loopRef => {
         if (loopRef.current) {
+          loopRef.current.stop(0);
           loopRef.current.dispose();
+          loopRef.current = null;
         }
       });
+
+      loopSynthRefs.forEach(loopSynthRef => {
+        if (loopSynthRef.current) {
+          loopSynthRef.current.dispose();
+          loopSynthRef.current = null;
+        }
+      });
+
       Object.values(synths.current).forEach(synth => synth.dispose());
-      console.log('Disposal complete.');
+      synths.current = {};
+
+      Object.values(drumVols.current).forEach(volumeNode => volumeNode.dispose());
+      drumVols.current = {};
+
+      effectNodesRef.current.forEach(node => {
+        if (node && typeof node.stop === 'function') {
+          try {
+            node.stop();
+          } catch (err) {
+            debugLog('Failed to stop node during cleanup', err);
+          }
+        }
+        node?.dispose?.();
+      });
+      effectNodesRef.current = [];
+
+      if (analyserRef.current) {
+        analyserRef.current.dispose();
+        analyserRef.current = null;
+      }
+
+      masterVol.current = null;
+      filter.current = null;
+
+      debugLog('Disposal complete.');
     };
   }, []); // Empty dependency array: runs once on mount
 
   // Update BPM when bpm state changes
   useEffect(() => {
-    console.log('BPM changed to:', bpm);
+    debugLog('BPM changed to:', bpm);
     Tone.Transport.bpm.value = bpm;
   }, [bpm]);
 
@@ -428,7 +500,7 @@ export const useDrumMachine = (drumSounds) => {
   };
 
   const handlePlay = () => {
-    console.log('Play button clicked. Transport state:', Tone.Transport.state);
+    debugLog('Play button clicked. Transport state:', Tone.Transport.state);
     if (Tone.Transport.state !== 'started') {
       Tone.Transport.start();
       loopRefs.forEach(loopRef => {
@@ -437,12 +509,12 @@ export const useDrumMachine = (drumSounds) => {
         }
       });
       setIsPlaying(true);
-      console.log('Transport started.');
+      debugLog('Transport started.');
     }
   };
 
   const handleStop = useCallback(() => {
-    console.log('Stop button clicked. Transport state:', Tone.Transport.state);
+    debugLog('Stop button clicked. Transport state:', Tone.Transport.state);
     Tone.Transport.stop();
     loopRefs.forEach(loopRef => {
       if (loopRef.current) {
@@ -451,7 +523,7 @@ export const useDrumMachine = (drumSounds) => {
     });
     setIsPlaying(false);
     setCurrentStep(-1); // Reset playhead
-    console.log('Transport stopped.');
+    debugLog('Transport stopped.');
   }, []);
 
   const handleBpmChange = (e) => {
@@ -708,11 +780,16 @@ export const useDrumMachine = (drumSounds) => {
   const playSound = (soundName) => {
     const sound = drumSounds.find(s => s.name === soundName);
     if (sound) {
-      if (sound.type === 'membrane') {
-        synths.current[sound.name].triggerAttackRelease(sound.note, '8n');
-      } else if (sound.type === 'noise') {
+      const duration = '8n';
+      const targetSynth = synths.current[sound.name];
+      if (!targetSynth) {
+        return;
+      }
 
-        synths.current[sound.name].triggerAttack();
+      if (sound.type === 'membrane') {
+        targetSynth.triggerAttackRelease(sound.note, duration);
+      } else if (sound.type === 'noise') {
+        targetSynth.triggerAttackRelease(duration);
       }
       setActivePad(soundName);
       setTimeout(() => setActivePad(null), 100); // Visual feedback duration
