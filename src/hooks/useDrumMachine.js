@@ -1,5 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
+import {
+  getCurrentPattern,
+  setCurrentPattern,
+  getSavedPatterns,
+  setSavedPatterns,
+  normalizePatternData,
+} from '../utils/storage';
+import { DEFAULTS, LOOPS_CONFIG } from '../constants/config';
+import { getPredefinedPatterns } from '../patterns';
+import { getStepCount, setStepCount, adaptPatternToStepCount } from '../utils/storage';
 
 const DEBUG = false;
 const debugLog = (...args) => {
@@ -9,10 +19,11 @@ const debugLog = (...args) => {
 };
 
 export const useDrumMachine = (drumSounds) => {
+  const [stepCount, setStepCountState] = useState(getStepCount(DEFAULTS.STEP_COUNT));
   const createEmptyPattern = () => {
     const emptyPattern = {};
     drumSounds.forEach(sound => {
-      emptyPattern[sound.name] = Array(16).fill(false);
+      emptyPattern[sound.name] = Array(stepCount).fill(false);
     });
     return emptyPattern;
   };
@@ -61,22 +72,13 @@ export const useDrumMachine = (drumSounds) => {
     },
   };
 
-  const [pattern, setPattern] = useState(() => {
-    const savedPattern = localStorage.getItem('currentBeatLabPattern');
-    if (savedPattern) {
-      return JSON.parse(savedPattern);
-    }
-    return predefinedPatterns['Empty'];
-  });
+  const [pattern, setPattern] = useState(() => getCurrentPattern(drumSounds, stepCount));
 
-  const [bpm, setBpm] = useState(120);
+  const [bpm, setBpm] = useState(DEFAULTS.BPM);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
   const [currentPatternName, setCurrentPatternName] = useState('Empty');
-  const [savedPatterns, setSavedPatterns] = useState(() => {
-    const saved = localStorage.getItem('beatLabSavedPatterns');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [savedPatterns, setSavedPatternsState] = useState(() => getSavedPatterns(drumSounds));
 
   // Refs for Tone.js instruments
   const synths = useRef({});
@@ -87,53 +89,43 @@ export const useDrumMachine = (drumSounds) => {
   const patternRef = useRef(pattern);
   useEffect(() => {
     patternRef.current = pattern;
-    localStorage.setItem('currentBeatLabPattern', JSON.stringify(pattern));
+    setCurrentPattern(pattern);
   }, [pattern]);
 
   const [drumVolumes, setDrumVolumes] = useState(() => {
     const initialVolumes = {};
     drumSounds.forEach(sound => {
-      initialVolumes[sound.name] = -10;
+      initialVolumes[sound.name] = DEFAULTS.VOLUME_DB;
     });
     return initialVolumes;
   });
 
-  const [masterVolume, setMasterVolume] = useState(-10);
-  const [loop1Playing, setLoop1Playing] = useState(false);
-  const [loop1Volume, setLoop1Volume] = useState(-10);
+  const [masterVolume, setMasterVolume] = useState(DEFAULTS.VOLUME_DB);
+  const [loopPlaying, setLoopPlaying] = useState(() => Array(LOOPS_CONFIG.length).fill(false));
+  const [loopVolume, setLoopVolume] = useState(() => Array(LOOPS_CONFIG.length).fill(DEFAULTS.VOLUME_DB));
   const loop1Synth = useRef(null);
   const loop1 = useRef(null);
 
-  const [loop2Playing, setLoop2Playing] = useState(false);
-  const [loop2Volume, setLoop2Volume] = useState(-10);
   const loop2Synth = useRef(null);
   const loop2 = useRef(null);
 
-  const [loop3Playing, setLoop3Playing] = useState(false);
-  const [loop3Volume, setLoop3Volume] = useState(-10);
   const loop3Synth = useRef(null);
   const loop3 = useRef(null);
 
-  const [loop4Playing, setLoop4Playing] = useState(false);
-  const [loop4Volume, setLoop4Volume] = useState(-10);
   const loop4Synth = useRef(null);
   const loop4 = useRef(null);
 
-  const [loop5Playing, setLoop5Playing] = useState(false);
-  const [loop5Volume, setLoop5Volume] = useState(-10);
   const loop5Synth = useRef(null);
   const loop5 = useRef(null);
 
-  const [loop6Playing, setLoop6Playing] = useState(false);
-  const [loop6Volume, setLoop6Volume] = useState(-10);
   const loop6Synth = useRef(null);
   const loop6 = useRef(null);
 
   const loopRefs = [loop1, loop2, loop3, loop4, loop5, loop6];
   const loopSynthRefs = [loop1Synth, loop2Synth, loop3Synth, loop4Synth, loop5Synth, loop6Synth];
 
-  const [filterFreq, setFilterFreq] = useState(20000);
-  const [filterQ, setFilterQ] = useState(1);
+  const [filterFreq, setFilterFreq] = useState(DEFAULTS.FILTER_FREQ);
+  const [filterQ, setFilterQ] = useState(DEFAULTS.FILTER_Q);
 
   const masterVol = useRef(null);
   const drumVols = useRef({});
@@ -418,7 +410,7 @@ export const useDrumMachine = (drumSounds) => {
           }
         });
       },
-      Array.from({ length: 16 }, (_, i) => i),
+      Array.from({ length: stepCount }, (_, i) => i),
       '16n'
     ).start(0);
     debugLog('Tone.Sequence set up.');
@@ -484,6 +476,29 @@ export const useDrumMachine = (drumSounds) => {
     };
   }, []); // Empty dependency array: runs once on mount
 
+  // Rebuild sequence when stepCount changes
+  useEffect(() => {
+    if (!sequenceRef.current) return;
+    sequenceRef.current.stop();
+    sequenceRef.current.dispose();
+    sequenceRef.current = new Tone.Sequence(
+      (time, step) => {
+        setCurrentStep(step);
+        drumSounds.forEach(sound => {
+          if (patternRef.current[sound.name][step]) {
+            if (sound.type === 'membrane') {
+              synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time);
+            } else if (sound.type === 'noise') {
+              synths.current[sound.name].triggerAttackRelease('8n', time);
+            }
+          }
+        });
+      },
+      Array.from({ length: stepCount }, (_, i) => i),
+      '16n'
+    ).start(0);
+  }, [stepCount, drumSounds]);
+
   // Update BPM when bpm state changes
   useEffect(() => {
     debugLog('BPM changed to:', bpm);
@@ -531,31 +546,45 @@ export const useDrumMachine = (drumSounds) => {
     setBpm(newBpm);
   };
 
+  const handleStepCountChange = (e) => {
+    const next = parseInt(e.target.value, 10);
+    if (!Number.isInteger(next) || next <= 0) return;
+    const adapted = adaptPatternToStepCount(patternRef.current, drumSounds, next);
+    setPattern(adapted);
+    setStepCountState(next);
+    setStepCount(next);
+  };
+
   const loadPattern = useCallback((patternName, patternData) => {
     if (patternData.pattern) { // Check for new format
-      setPattern(patternData.pattern);
+      const target = adaptPatternToStepCount(patternData.pattern, drumSounds, stepCount);
+      setPattern(target);
       setDrumVolumes(patternData.drumVolumes);
       setMasterVolume(patternData.masterVolume);
       setFilterFreq(patternData.filterFreq);
       setFilterQ(patternData.filterQ);
-      setLoop1Playing(patternData.loop1Playing);
-      setLoop1Volume(patternData.loop1Volume);
-      setLoop2Playing(patternData.loop2Playing);
-      setLoop2Volume(patternData.loop2Volume);
-      setLoop3Playing(patternData.loop3Playing);
-      setLoop3Volume(patternData.loop3Volume);
-      setLoop4Playing(patternData.loop4Playing);
-      setLoop4Volume(patternData.loop4Volume);
-      setLoop5Playing(patternData.loop5Playing);
-      setLoop5Volume(patternData.loop5Volume);
-      setLoop6Playing(patternData.loop6Playing);
-      setLoop6Volume(patternData.loop6Volume);
+      setLoopPlaying([
+        !!patternData.loop1Playing,
+        !!patternData.loop2Playing,
+        !!patternData.loop3Playing,
+        !!patternData.loop4Playing,
+        !!patternData.loop5Playing,
+        !!patternData.loop6Playing,
+      ]);
+      setLoopVolume([
+        Number.isFinite(patternData.loop1Volume) ? patternData.loop1Volume : DEFAULTS.VOLUME_DB,
+        Number.isFinite(patternData.loop2Volume) ? patternData.loop2Volume : DEFAULTS.VOLUME_DB,
+        Number.isFinite(patternData.loop3Volume) ? patternData.loop3Volume : DEFAULTS.VOLUME_DB,
+        Number.isFinite(patternData.loop4Volume) ? patternData.loop4Volume : DEFAULTS.VOLUME_DB,
+        Number.isFinite(patternData.loop5Volume) ? patternData.loop5Volume : DEFAULTS.VOLUME_DB,
+        Number.isFinite(patternData.loop6Volume) ? patternData.loop6Volume : DEFAULTS.VOLUME_DB,
+      ]);
     } else { // For backward compatibility
-      setPattern(patternData);
+      setPattern(adaptPatternToStepCount(patternData, drumSounds, stepCount));
     }
     setCurrentPatternName(patternName);
     handleStop(); // Stop playback when changing pattern
-  }, [handleStop]);
+  }, [handleStop, drumSounds, stepCount]);
 
   const savePattern = () => {
     const patternName = prompt('Enter a name for your pattern:');
@@ -566,22 +595,24 @@ export const useDrumMachine = (drumSounds) => {
         masterVolume,
         filterFreq,
         filterQ,
-        loop1Playing,
-        loop1Volume,
-        loop2Playing,
-        loop2Volume,
-        loop3Playing,
-        loop3Volume,
-        loop4Playing,
-        loop4Volume,
-        loop5Playing,
-        loop5Volume,
-        loop6Playing,
-        loop6Volume,
+        stepCount,
+        loop1Playing: !!loopPlaying[0],
+        loop1Volume: loopVolume[0],
+        loop2Playing: !!loopPlaying[1],
+        loop2Volume: loopVolume[1],
+        loop3Playing: !!loopPlaying[2],
+        loop3Volume: loopVolume[2],
+        loop4Playing: !!loopPlaying[3],
+        loop4Volume: loopVolume[3],
+        loop5Playing: !!loopPlaying[4],
+        loop5Volume: loopVolume[4],
+        loop6Playing: !!loopPlaying[5],
+        loop6Volume: loopVolume[5],
       };
-      const newSavedPatterns = { ...savedPatterns, [patternName]: patternData };
+      const normalized = normalizePatternData(patternData, drumSounds, stepCount);
+      const newSavedPatterns = { ...savedPatterns, [patternName]: normalized };
+      setSavedPatternsState(newSavedPatterns);
       setSavedPatterns(newSavedPatterns);
-      localStorage.setItem('beatLabSavedPatterns', JSON.stringify(newSavedPatterns));
       setCurrentPatternName(patternName);
       alert(`Pattern "${patternName}" saved!`);
     }
@@ -591,8 +622,8 @@ export const useDrumMachine = (drumSounds) => {
     if (window.confirm(`Are you sure you want to delete pattern "${patternName}"?`)) {
       const newSavedPatterns = { ...savedPatterns };
       delete newSavedPatterns[patternName];
+      setSavedPatternsState(newSavedPatterns);
       setSavedPatterns(newSavedPatterns);
-      localStorage.setItem('beatLabSavedPatterns', JSON.stringify(newSavedPatterns));
       if (currentPatternName === patternName) {
         loadPattern('Empty', predefinedPatterns['Empty']);
       }
@@ -639,123 +670,38 @@ export const useDrumMachine = (drumSounds) => {
   }, [filterQ]);
 
   useEffect(() => {
-    if (loop1.current) {
-      loop1.current.mute = !loop1Playing;
-    }
-  }, [loop1Playing]);
+    const refs = [loop1, loop2, loop3, loop4, loop5, loop6];
+    refs.forEach((ref, i) => {
+      if (ref.current) {
+        ref.current.mute = !loopPlaying[i];
+      }
+    });
+  }, [loopPlaying]);
 
   useEffect(() => {
-    if (loop1Synth.current) {
-      loop1Synth.current.volume.value = loop1Volume;
-    }
-  }, [loop1Volume]);
+    const synthRefs = [loop1Synth, loop2Synth, loop3Synth, loop4Synth, loop5Synth, loop6Synth];
+    synthRefs.forEach((ref, i) => {
+      if (ref.current) {
+        ref.current.volume.value = loopVolume[i];
+      }
+    });
+  }, [loopVolume]);
 
-  useEffect(() => {
-    if (loop2.current) {
-      loop2.current.mute = !loop2Playing;
-    }
-  }, [loop2Playing]);
-
-  useEffect(() => {
-    if (loop2Synth.current) {
-      loop2Synth.current.volume.value = loop2Volume;
-    }
-  }, [loop2Volume]);
-
-  useEffect(() => {
-    if (loop3.current) {
-      loop3.current.mute = !loop3Playing;
-    }
-  }, [loop3Playing]);
-
-  useEffect(() => {
-    if (loop3Synth.current) {
-      loop3Synth.current.volume.value = loop3Volume;
-    }
-  }, [loop3Volume]);
-
-  useEffect(() => {
-    if (loop4.current) {
-      loop4.current.mute = !loop4Playing;
-    }
-  }, [loop4Playing]);
-
-  useEffect(() => {
-    if (loop4Synth.current) {
-      loop4Synth.current.volume.value = loop4Volume;
-    }
-  }, [loop4Volume]);
-
-  useEffect(() => {
-    if (loop5.current) {
-      loop5.current.mute = !loop5Playing;
-    }
-  }, [loop5Playing]);
-
-  useEffect(() => {
-    if (loop5Synth.current) {
-      loop5Synth.current.volume.value = loop5Volume;
-    }
-  }, [loop5Volume]);
-
-  useEffect(() => {
-    if (loop6.current) {
-      loop6.current.mute = !loop6Playing;
-    }
-  }, [loop6Playing]);
-
-  useEffect(() => {
-    if (loop6Synth.current) {
-      loop6Synth.current.volume.value = loop6Volume;
-    }
-  }, [loop6Volume]);
-
-  const toggleLoop1 = () => {
-    setLoop1Playing(prev => !prev);
+  const toggleLoopAt = (index) => {
+    setLoopPlaying(prev => {
+      const next = [...prev];
+      next[index] = !next[index];
+      return next;
+    });
   };
 
-  const handleLoop1VolumeChange = (e) => {
-    setLoop1Volume(parseFloat(e.target.value));
-  };
-
-  const toggleLoop2 = () => {
-    setLoop2Playing(prev => !prev);
-  };
-
-  const handleLoop2VolumeChange = (e) => {
-    setLoop2Volume(parseFloat(e.target.value));
-  };
-
-  const toggleLoop3 = () => {
-    setLoop3Playing(prev => !prev);
-  };
-
-  const handleLoop3VolumeChange = (e) => {
-    setLoop3Volume(parseFloat(e.target.value));
-  };
-
-  const toggleLoop4 = () => {
-    setLoop4Playing(prev => !prev);
-  };
-
-  const handleLoop4VolumeChange = (e) => {
-    setLoop4Volume(parseFloat(e.target.value));
-  };
-
-  const toggleLoop5 = () => {
-    setLoop5Playing(prev => !prev);
-  };
-
-  const handleLoop5VolumeChange = (e) => {
-    setLoop5Volume(parseFloat(e.target.value));
-  };
-
-  const toggleLoop6 = () => {
-    setLoop6Playing(prev => !prev);
-  };
-
-  const handleLoop6VolumeChange = (e) => {
-    setLoop6Volume(parseFloat(e.target.value));
+  const handleLoopVolumeChangeAt = (index, e) => {
+    const val = parseFloat(e.target.value);
+    setLoopVolume(prev => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
   };
 
   const handleFilterFreqChange = (e) => {
@@ -799,24 +745,15 @@ export const useDrumMachine = (drumSounds) => {
   return {
     pattern,
     bpm,
+    stepCount,
     isPlaying,
     currentStep,
     currentPatternName,
     savedPatterns,
     drumVolumes,
     masterVolume,
-    loop1Playing,
-    loop1Volume,
-    loop2Playing,
-    loop2Volume,
-    loop3Playing,
-    loop3Volume,
-    loop4Playing,
-    loop4Volume,
-    loop5Playing,
-    loop5Volume,
-    loop6Playing,
-    loop6Volume,
+    loopPlaying,
+    loopVolume,
     filterFreq,
     filterQ,
     activePad,
@@ -825,6 +762,7 @@ export const useDrumMachine = (drumSounds) => {
     handlePlay,
     handleStop,
     handleBpmChange,
+    handleStepCountChange,
     loadPattern,
     savePattern,
     deletePattern,
@@ -833,20 +771,10 @@ export const useDrumMachine = (drumSounds) => {
     handleMasterVolumeChange,
     handleFilterFreqChange,
     handleFilterQChange,
-    toggleLoop1,
-    handleLoop1VolumeChange,
-    toggleLoop2,
-    handleLoop2VolumeChange,
-    toggleLoop3,
-    handleLoop3VolumeChange,
-    toggleLoop4,
-    handleLoop4VolumeChange,
-    toggleLoop5,
-    handleLoop5VolumeChange,
-    toggleLoop6,
-    handleLoop6VolumeChange,
+    toggleLoopAt,
+    handleLoopVolumeChangeAt,
     playSound,
-    predefinedPatterns,
+    predefinedPatterns: getPredefinedPatterns(drumSounds, stepCount),
     analyser: analyserRef.current,
   };
 };
