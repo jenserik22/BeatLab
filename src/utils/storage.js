@@ -64,19 +64,19 @@ export const normalizePatternOnly = (raw, drumSounds, stepCount = 16) => {
 
 // Adaptation helpers
 export const adaptPatternToStepCount = (pattern, drumSounds, toStepCount) => {
+  // Non-destructive resize: preserve existing steps in order.
+  // - If increasing, append false values
+  // - If decreasing, truncate from the end
   if (!pattern || typeof pattern !== 'object') return createEmptyPattern(drumSounds, toStepCount);
-  const any = drumSounds[0]?.name;
-  const fromLen = Array.isArray(pattern[any]) ? pattern[any].length : 16;
-  if (fromLen === toStepCount) return normalizePatternOnly(pattern, drumSounds, toStepCount);
   const out = {};
   drumSounds.forEach(s => {
-    const src = Array.isArray(pattern[s.name]) ? pattern[s.name] : [];
-    const arr = Array(toStepCount).fill(false);
-    for (let i = 0; i < toStepCount; i++) {
-      const srcIdx = Math.floor(i * fromLen / toStepCount);
-      arr[i] = !!src[srcIdx];
+    const src = Array.isArray(pattern[s.name]) ? pattern[s.name].map(Boolean) : [];
+    const len = src.length;
+    if (toStepCount <= len) {
+      out[s.name] = src.slice(0, toStepCount);
+    } else {
+      out[s.name] = src.concat(Array(toStepCount - len).fill(false));
     }
-    out[s.name] = arr;
   });
   return out;
 };
