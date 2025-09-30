@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/BeatLab/static/css/main.68eea737.css",
-    "main.js": "/BeatLab/static/js/main.079ef000.js",
+    "main.js": "/BeatLab/static/js/main.ad140fdc.js",
     "static/js/453.593297dc.chunk.js": "/BeatLab/static/js/453.593297dc.chunk.js",
     "index.html": "/BeatLab/index.html",
     "main.68eea737.css.map": "/BeatLab/static/css/main.68eea737.css.map",
-    "main.079ef000.js.map": "/BeatLab/static/js/main.079ef000.js.map",
+    "main.ad140fdc.js.map": "/BeatLab/static/js/main.ad140fdc.js.map",
     "453.593297dc.chunk.js.map": "/BeatLab/static/js/453.593297dc.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.68eea737.css",
-    "static/js/main.079ef000.js"
+    "static/js/main.ad140fdc.js"
   ]
 }
