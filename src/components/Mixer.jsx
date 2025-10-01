@@ -79,15 +79,18 @@ const Mixer = ({
               {loop.label}
             </button>
             <div className="volume-control">
-              <label htmlFor={`${loop.id}-volume`}>Volume: {loopVolume?.[i]} dB</label>
+              <label htmlFor={`${loop.id}-volume`}>Volume: {dbToPercent(loopVolume?.[i] ?? DEFAULTS.VOLUME_DB)}%</label>
               <input
                 type="range"
                 id={`${loop.id}-volume`}
-                min={DEFAULTS.VOLUME_MIN}
-                max={DEFAULTS.VOLUME_MAX}
+                min={0}
+                max={100}
                 step="1"
-                value={loopVolume?.[i] ?? DEFAULTS.VOLUME_DB}
-                onChange={(e) => handleLoopVolumeChangeAt(i, e)}
+                value={dbToPercent(loopVolume?.[i] ?? DEFAULTS.VOLUME_DB)}
+                onChange={(e) => {
+                  const db = percentToDb(parseFloat(e.target.value), DEFAULTS.VOLUME_MIN, DEFAULTS.VOLUME_MAX);
+                  handleLoopVolumeChangeAt(i, { target: { value: db } });
+                }}
               />
             </div>
           </div>
