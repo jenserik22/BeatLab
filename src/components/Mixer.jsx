@@ -1,5 +1,6 @@
 import React from 'react';
 import { LOOPS_CONFIG, DEFAULTS } from '../constants/config';
+import { dbToPercent, percentToDb } from '../utils/volume';
 
 const Mixer = ({
   drumSounds,
@@ -25,13 +26,16 @@ const Mixer = ({
               <input
                 type="range"
                 id={`${sound.name}-volume`}
-                min={DEFAULTS.VOLUME_MIN}
-                max={DEFAULTS.VOLUME_MAX}
+                min={0}
+                max={100}
                 step="1"
-                value={drumVolumes[sound.name]}
-                onChange={(e) => handleDrumVolumeChange(sound.name, e.target.value)}
+                value={dbToPercent(drumVolumes[sound.name])}
+                onChange={(e) => handleDrumVolumeChange(
+                  sound.name,
+                  percentToDb(parseFloat(e.target.value), DEFAULTS.VOLUME_MIN, DEFAULTS.VOLUME_MAX)
+                )}
               />
-              <span>{drumVolumes[sound.name]} dB</span>
+              <span>{dbToPercent(drumVolumes[sound.name])}%</span>
             </div>
           ))}
         </div>

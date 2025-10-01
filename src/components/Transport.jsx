@@ -1,4 +1,6 @@
 import React from 'react';
+import { dbToPercent, percentToDb } from '../utils/volume';
+import { DEFAULTS } from '../constants/config';
 
 const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange }) => {
   return (
@@ -26,15 +28,18 @@ const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handleP
         </select>
       </div>
       <div className="volume-control">
-        <label htmlFor="master-volume">Volume: {masterVolume} dB</label>
+        <label htmlFor="master-volume">Volume: {dbToPercent(masterVolume)}%</label>
         <input
           type="range"
           id="master-volume"
-          min="-40"
-          max="0"
+          min="0"
+          max="100"
           step="1"
-          value={masterVolume}
-          onChange={handleMasterVolumeChange}
+          value={dbToPercent(masterVolume)}
+          onChange={(e) => {
+            const db = percentToDb(parseFloat(e.target.value), DEFAULTS.VOLUME_MIN, DEFAULTS.VOLUME_MAX);
+            handleMasterVolumeChange({ target: { value: db } });
+          }}
         />
       </div>
     </div>
