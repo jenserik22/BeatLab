@@ -17,6 +17,12 @@ body {
   transform-origin: top center;
 }
 
+/* Center the welcome screen vertically and adjust transform origin */
+.App.welcome {
+  align-items: center;
+  transform-origin: center center;
+}
+
 .start-screen {
   display: flex;
   flex-direction: column;

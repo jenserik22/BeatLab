@@ -52,7 +52,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className={`App ${!audioContextStarted ? 'welcome' : ''}`}>
       {!audioContextStarted ? (
         <div className="start-screen">
           <h1>BeatLab</h1>
