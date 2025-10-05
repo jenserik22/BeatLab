@@ -10,6 +10,7 @@ import {
 import { DEFAULTS, LOOPS_CONFIG } from '../constants/config';
 import { getPredefinedPatterns } from '../patterns';
 import { getStepCount, setStepCount, adaptPatternToStepCount } from '../utils/storage';
+import { encodePattern } from '../utils/url';
 
 const DEBUG = false;
 const debugLog = (...args) => {
@@ -723,7 +724,25 @@ export const useDrumMachine = (drumSounds) => {
     setMasterVolume(parseFloat(e.target.value));
   };
 
+
+  const getSharablePatternUrl = () => {
+    const patternData = {
+      pattern,
+      bpm,
+      stepCount,
+      drumVolumes,
+      masterVolume,
+      filterFreq,
+      filterQ,
+      loopPlaying,
+      loopVolume,
+    };
+    const encodedPattern = encodePattern(patternData);
+    return `${window.location.origin}?pattern=${encodedPattern}`;
+  };
+
   const playSound = (soundName) => {
+
     const sound = drumSounds.find(s => s.name === soundName);
     if (sound) {
       const duration = '8n';
@@ -776,5 +795,6 @@ export const useDrumMachine = (drumSounds) => {
     playSound,
     predefinedPatterns: getPredefinedPatterns(drumSounds, stepCount),
     analyser: analyserRef.current,
+    getSharablePatternUrl,
   };
 };

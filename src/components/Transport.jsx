@@ -2,12 +2,22 @@ import React from 'react';
 import { dbToPercent, percentToDb } from '../utils/volume';
 import { DEFAULTS } from '../constants/config';
 
-const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange }) => {
+const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl }) => {
+  const handleShare = () => {
+    const url = getSharablePatternUrl();
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Sharable URL copied to clipboard!');
+    }, () => {
+      alert('Failed to copy sharable URL.');
+    });
+  };
+
   return (
     <div className="transport-controls">
       <button onClick={handlePlay} disabled={isPlaying}>Play</button>
       <button onClick={handleStop} disabled={!isPlaying}>Stop</button>
       <button onClick={toggleLoop} className={isLooping ? 'active' : ''}>Loop</button>
+      <button onClick={handleShare}>Share</button>
       <div className="bpm-control">
         <label htmlFor="bpm">BPM: {bpm}</label>
         <input

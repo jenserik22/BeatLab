@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { decodePattern } from './utils/url';
 import * as Tone from 'tone';
 import './App.css';
 import './components/FrequencySpectrum.css';
@@ -26,6 +27,18 @@ const drumSounds = [
 function App() {
   const [audioContextStarted, setAudioContextStarted] = useState(false);
   const drumMachine = useDrumMachine(drumSounds);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const patternParam = urlParams.get('pattern');
+    if (patternParam) {
+      const decodedPattern = decodePattern(patternParam);
+      if (decodedPattern) {
+        drumMachine.loadPattern('Shared Pattern', decodedPattern);
+      }
+    }
+  }, []);
+
 
   const startAudioContext = async () => {
     try {
