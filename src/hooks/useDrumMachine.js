@@ -734,8 +734,18 @@ export const useDrumMachine = (drumSounds) => {
       masterVolume,
       filterFreq,
       filterQ,
-      loopPlaying,
-      loopVolume,
+      loop1Playing: !!loopPlaying[0],
+      loop1Volume: loopVolume[0],
+      loop2Playing: !!loopPlaying[1],
+      loop2Volume: loopVolume[1],
+      loop3Playing: !!loopPlaying[2],
+      loop3Volume: loopVolume[2],
+      loop4Playing: !!loopPlaying[3],
+      loop4Volume: loopVolume[3],
+      loop5Playing: !!loopPlaying[4],
+      loop5Volume: loopVolume[4],
+      loop6Playing: !!loopPlaying[5],
+      loop6Volume: loopVolume[5],
     };
     const encodedPattern = encodePattern(patternData);
     return `${window.location.origin}?pattern=${encodedPattern}`;
