@@ -558,8 +558,15 @@ export const useDrumMachine = (drumSounds) => {
 
   const loadPattern = useCallback((patternName, patternData) => {
     if (patternData.pattern) { // Check for new format
-      const target = adaptPatternToStepCount(patternData.pattern, drumSounds, stepCount);
+      const newStepCount = patternData.stepCount || stepCount;
+      const target = adaptPatternToStepCount(patternData.pattern, drumSounds, newStepCount);
       setPattern(target);
+      if (patternData.bpm) {
+        setBpm(patternData.bpm);
+      }
+      if (patternData.stepCount) {
+        setStepCountState(patternData.stepCount);
+      }
       setDrumVolumes(patternData.drumVolumes);
       setMasterVolume(patternData.masterVolume);
       setFilterFreq(patternData.filterFreq);
