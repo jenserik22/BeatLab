@@ -10,13 +10,41 @@ import {
 import { DEFAULTS, LOOPS_CONFIG } from '../constants/config';
 import { getPredefinedPatterns } from '../patterns';
 import { getStepCount, setStepCount, adaptPatternToStepCount } from '../utils/storage';
-import { encodePattern } from '../utils/url';
+import { encodePatternPayload } from '../utils/url';
+import { savePattern as savePatternToRemote } from '../services/shareStore';
 
 const DEBUG = false;
 const debugLog = (...args) => {
   if (DEBUG) {
     console.log(...args);
   }
+};
+
+const ensureTrailingSlash = (value) => (value.endsWith('/') ? value : `${value}/`);
+
+const resolveBaseShareUrl = () => {
+  if (typeof window === 'undefined') return '';
+  const { origin, pathname } = window.location;
+  const publicUrl = process.env.PUBLIC_URL;
+
+  if (publicUrl) {
+    try {
+      const url = new URL(publicUrl, origin);
+      return ensureTrailingSlash(`${url.origin}${url.pathname}`);
+    } catch (_e) {
+      const sanitized = publicUrl.replace(/\/+$/g, '').replace(/^\/+/, '');
+      if (!sanitized) {
+        return ensureTrailingSlash(origin);
+      }
+      return ensureTrailingSlash(`${origin}/${sanitized}`);
+    }
+  }
+
+  if (origin.includes('github.io') || pathname.toLowerCase().includes('/beatlab')) {
+    return ensureTrailingSlash(`${origin}/BeatLab`);
+  }
+
+  return ensureTrailingSlash(origin);
 };
 
 export const useDrumMachine = (drumSounds) => {
@@ -542,9 +570,14 @@ export const useDrumMachine = (drumSounds) => {
     debugLog('Transport stopped.');
   }, []);
 
+  const applyBpm = (value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return;
+    setBpm(numeric);
+  };
+
   const handleBpmChange = (e) => {
-    const newBpm = parseFloat(e.target.value);
-    setBpm(newBpm);
+    applyBpm(e.target.value);
   };
 
   const handleStepCountChange = (e) => {
@@ -732,7 +765,7 @@ export const useDrumMachine = (drumSounds) => {
   };
 
 
-  const getSharablePatternUrl = () => {
+  const buildShareData = () => {
     const patternData = {
       pattern,
       bpm,
@@ -754,8 +787,32 @@ export const useDrumMachine = (drumSounds) => {
       loop6Playing: !!loopPlaying[5],
       loop6Volume: loopVolume[5],
     };
-    const encodedPattern = encodePattern(patternData);
-    return `${window.location.origin}?pattern=${encodedPattern}`;
+    return normalizePatternData(patternData, drumSounds, stepCount);
+  };
+
+  const getSharablePatternUrl = async () => {
+    const shareData = buildShareData();
+    const baseUrl = resolveBaseShareUrl();
+    const fallbackPayload = encodePatternPayload(shareData);
+    const fallbackUrl = `${baseUrl}?p=${fallbackPayload}`;
+
+    try {
+      const id = await savePatternToRemote(shareData);
+      return {
+        url: `${baseUrl}${id}`,
+        fallbackUrl,
+        fallbackPayload,
+        isFallback: false,
+      };
+    } catch (error) {
+      return {
+        url: fallbackUrl,
+        fallbackUrl,
+        fallbackPayload,
+        isFallback: true,
+        error,
+      };
+    }
   };
 
   const playSound = (soundName) => {

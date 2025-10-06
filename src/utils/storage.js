@@ -1,3 +1,5 @@
+import { DEFAULTS } from '../constants/config';
+
 const isBrowser = () => typeof window !== 'undefined' && !!window.localStorage;
 
 const safeParse = (value, fallback) => {
@@ -94,6 +96,7 @@ export const createPatternDataDefaults = (drumSounds, stepCount = 16) => ({
   loop5Playing: false, loop5Volume: -10,
   loop6Playing: false, loop6Volume: -10,
   stepCount,
+  bpm: DEFAULTS.BPM,
 });
 
 export const normalizePatternData = (raw, drumSounds, preferredStepCount = 16) => {
@@ -130,6 +133,7 @@ export const normalizePatternData = (raw, drumSounds, preferredStepCount = 16) =
   }
 
   n.stepCount = stepCount;
+  n.bpm = numOr(raw.bpm, d.bpm);
   return n;
 };
 
