@@ -221,7 +221,7 @@ body {
 }
 /* Pattern Controls */
 .pattern-controls {
-  padding: 15px;
+  padding: 1px 15px 15px;
   background-color: #2a2a4a;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
@@ -290,7 +290,7 @@ body {
 
 /* Drum Mix */
 .drum-mix {
-  padding: 15px;
+  padding: 1px 15px 15px;
   background-color: #2a2a4a;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
@@ -347,7 +347,7 @@ body {
 }
 
 .filter-controls {
-  padding: 15px;
+  padding: 1px 15px 15px;
   background-color: #2a2a4a;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
@@ -362,7 +362,7 @@ body {
 }
 
 .background-loops {
-  padding: 15px;
+  padding: 1px 15px 15px;
   background-color: #2a2a4a;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
@@ -442,7 +442,7 @@ body {
 }
 
 .sequencer-card {
-  padding: 15px;
+  padding: 1px 15px 15px;
   background-color: #2a2a4a;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
