@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import * as Tone from 'tone';
 import {
   getCurrentPattern,
@@ -150,7 +150,7 @@ export const useDrumMachine = (drumSounds) => {
   const loop6Synth = useRef(null);
   const loop6 = useRef(null);
 
-  const loopRefs = [loop1, loop2, loop3, loop4, loop5, loop6];
+  const loopRefs = useMemo(() => [loop1, loop2, loop3, loop4, loop5, loop6], []);
   const loopSynthRefs = [loop1Synth, loop2Synth, loop3Synth, loop4Synth, loop5Synth, loop6Synth];
 
   const [filterFreq, setFilterFreq] = useState(DEFAULTS.FILTER_FREQ);
@@ -503,6 +503,7 @@ export const useDrumMachine = (drumSounds) => {
 
       debugLog('Disposal complete.');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array: runs once on mount
 
   // Rebuild sequence when stepCount changes
@@ -568,7 +569,7 @@ export const useDrumMachine = (drumSounds) => {
     setIsPlaying(false);
     setCurrentStep(-1); // Reset playhead
     debugLog('Transport stopped.');
-  }, []);
+  }, [loopRefs]);
 
   const applyBpm = (value) => {
     const numeric = Number(value);

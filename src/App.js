@@ -9,6 +9,7 @@ import Sequencer from './components/Sequencer';
 import Transport from './components/Transport';
 import Mixer from './components/Mixer';
 import Visualizer from './components/Visualizer';
+import PulsingBackground from './components/PulsingBackground';
 
 import Patterns from './components/Patterns';
 import { useDrumMachine } from './hooks/useDrumMachine';
@@ -150,8 +151,9 @@ function App() {
     <div className={`App ${!audioContextStarted ? 'welcome' : ''}`}>
       {!audioContextStarted ? (
         <div className="start-screen">
+          <PulsingBackground />
           <h1>BeatLab</h1>
-          <button onClick={startAudioContext}>Click to Start</button>
+          <button onClick={startAudioContext}>Start Creating</button>
         </div>
       ) : (
         <div className="app-container">

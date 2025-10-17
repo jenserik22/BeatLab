@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import * as Tone from 'tone';
 
 const FrequencySpectrum = ({ isPlaying = false, analyser }) => {
   const canvasRef = useRef(null);
