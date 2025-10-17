@@ -11,7 +11,7 @@ BeatLab is a web-based music synthesis application built with React and Tone.js.
 ## Core Features
 
 ### Drum Machine/Sequencer
-*   **32-Step Sequencer:** Users can program drum patterns across 16 steps for each instrument.
+*   **32-Step Sequencer:** Users can program drum patterns across 32 steps for each instrument.
 *   **Diverse Drum Sounds:** Includes a variety of drum sounds such as Kick, Snare, Closed Hi-Hat, Open Hi-Hat, Clap, Crash, Tom Low, and Tom High.
 *   **Interactive Pattern Creation:** Steps can be toggled on/off for each drum sound, allowing for custom beat creation.
 *   **Adjustable BPM:** Users can control the playback speed of their patterns by adjusting the Beats Per Minute (BPM).
