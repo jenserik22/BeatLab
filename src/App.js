@@ -158,7 +158,11 @@ function App() {
       ) : (
         <div className="app-container">
           <div className="middle-column">
-            <Transport {...drumMachine} />
+            <Transport 
+            {...drumMachine} 
+            drumSounds={drumSounds}
+            pattern={drumMachine.pattern}
+          />
             <Patterns {...drumMachine} predefinedPatterns={drumMachine.predefinedPatterns} />
             <Sequencer {...drumMachine} drumSounds={drumSounds} />
             <Visualizer {...drumMachine} />

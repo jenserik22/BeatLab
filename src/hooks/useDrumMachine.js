@@ -871,5 +871,12 @@ export const useDrumMachine = (drumSounds) => {
     predefinedPatterns: getPredefinedPatterns(drumSounds, stepCount),
     analyser: analyserRef.current,
     getSharablePatternUrl,
+    // Export loops for audio export
+    loop1: loop1.current,
+    loop2: loop2.current,
+    loop3: loop3.current,
+    loop4: loop4.current,
+    loop5: loop5.current,
+    loop6: loop6.current,
   };
 };

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { dbToPercent, percentToDb } from '../utils/volume';
 import { DEFAULTS } from '../constants/config';
+import AudioExporter from './AudioExporter';
 
-const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl }) => {
+const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl, drumSounds, pattern, drumVolumes, filterFreq, filterQ, loopPlaying, loopVolume, loop1, loop2, loop3, loop4, loop5, loop6 }) => {
   const [shareStatus, setShareStatus] = useState(null);
   const shareTimeoutRef = useRef(null);
 
@@ -71,6 +72,24 @@ const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handleP
       <button onClick={handleStop} disabled={!isPlaying}>Stop</button>
       <button onClick={toggleLoop} className={isLooping ? 'active' : ''}>Loop</button>
       <button onClick={handleShare}>Share</button>
+      <AudioExporter 
+        drumSounds={drumSounds}
+        bpm={bpm}
+        stepCount={stepCount}
+        pattern={pattern}
+        drumVolumes={drumVolumes}
+        masterVolume={masterVolume}
+        filterFreq={filterFreq}
+        filterQ={undefined}
+        loopPlaying={loopPlaying}
+        loopVolume={loopVolume}
+        loop1={loop1}
+        loop2={loop2}
+        loop3={loop3}
+        loop4={loop4}
+        loop5={loop5}
+        loop6={loop6}
+      />
       <div className="bpm-control">
         <label htmlFor="bpm">BPM: {bpm}</label>
         <input

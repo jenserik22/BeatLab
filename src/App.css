@@ -511,3 +511,249 @@ margin-top: 40px;
   color: #00ffff;
   margin-bottom: 15px;
 }
+
+/* Export Button Styles */
+.export-button {
+  background-color: #00ffff;
+  color: #1a1a2e;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  margin-left: 10px;
+}
+
+.export-button:hover:not(:disabled) {
+  background-color: #00e6e6;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+  transform: translateY(-2px);
+}
+
+.export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Export Modal Styles */
+.export-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.export-modal {
+  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a2e 100%);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+  max-width: 400px;
+  width: 90%;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.export-modal h3 {
+  color: #00ffff;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.export-option {
+  margin-bottom: 15px;
+}
+
+.export-option label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #e0e0e0;
+}
+
+.export-option select,
+.export-option input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.export-option select:focus,
+.export-option input[type="text"]:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.export-option select option {
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+}
+
+/* Export Progress Styles */
+.export-progress {
+  margin: 20px 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #1a1a2e;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff 0%, #00e6e6 100%);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.export-progress p {
+  text-align: center;
+  margin-top: 10px;
+  color: #e0e0e0;
+  font-weight: bold;
+}
+
+/* Export Error Styles */
+.export-error {
+  background-color: rgba(255, 0, 0, 0.2);
+  color: #ff6b6b;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  border-left: 4px solid #ff6b6b;
+  font-size: 0.9em;
+}
+
+/* Export Modal Buttons */
+.export-modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.export-modal-buttons button {
+  flex: 1;
+  padding: 12px 20px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+.export-modal-buttons button:first-child {
+  background-color: #00ffff;
+  color: #1a1a2e;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.export-modal-buttons button:first-child:hover:not(:disabled) {
+  background-color: #00e6e6;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.export-modal-buttons button:last-child {
+  background-color: #3a3a5a;
+  color: #e0e0e0;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.export-modal-buttons button:last-child:hover:not(:disabled) {
+  background-color: #4a4a6a;
+  border-color: #00ffff;
+}
+
+.export-modal-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Number Input Controls */
+.number-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.number-input {
+  width: 80px;
+  padding: 10px;
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1em;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.increment-btn {
+  background-color: #3a3a5a;
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.increment-btn:hover:not(:disabled) {
+  background-color: #4a4a6a;
+  border-color: #00ffff;
+  transform: translateY(-2px);
+}
+
+.increment-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.increment-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.duration-unit {
+  font-size: 0.9em;
+  color: #00ffff;
+  font-weight: normal;
+  margin-left: 4px;
+}
