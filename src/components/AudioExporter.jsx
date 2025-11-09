@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import * as Tone from 'tone';
+import { renderAudioOffline, calculateExportDuration, encodeWAV, downloadAudioFile } from '../utils/audioExportRenderer';
 
 const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes, 
                           masterVolume, filterFreq, filterQ, loopPlaying, loopVolume,
