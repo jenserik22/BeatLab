@@ -7,7 +7,10 @@ import {
   setSavedPatterns,
 } from '../utils/storage';
 import { DEFAULTS, LOOPS_CONFIG } from '../constants/config';
-import { getPredefinedPatterns } from '../patterns';
+import {
+  generateAllPatterns,
+  generatePattern,
+} from '../utils/patternFactory';
 import { getStepCount, setStepCount } from '../utils/storage';
 import { encodePatternPayload } from '../utils/url';
 import { savePattern as savePatternToRemote } from '../services/shareStore';
@@ -54,49 +57,7 @@ const resolveBaseShareUrl = () => {
 export const useDrumMachine = (drumSounds) => {
   const [stepCount, setStepCountState] = useState(getStepCount(DEFAULTS.STEP_COUNT));
 
-  const predefinedPatterns = {
-    'Empty': createEmptyPattern(drumSounds, getStepCount(DEFAULTS.STEP_COUNT)),
-    'Rock Beat': {
-      'Kick': [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
-      'Snare': [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
-      'Closed Hi-Hat': [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
-      'Open Hi-Hat': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Clap': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Crash': [true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom Low': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom High': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-    },
-    'Hip-Hop': {
-      'Kick': [true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false],
-      'Snare': [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
-      'Closed Hi-Hat': [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true],
-      'Open Hi-Hat': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Clap': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Crash': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom Low': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom High': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-    },
-    'Techno': {
-      'Kick': [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
-      'Snare': [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
-      'Closed Hi-Hat': [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
-      'Open Hi-Hat': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Clap': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Crash': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom Low': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom High': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-    },
-    'Breakbeat': {
-      'Kick': [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false],
-      'Snare': [false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false],
-      'Closed Hi-Hat': [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true],
-      'Open Hi-Hat': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Clap': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Crash': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom Low': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      'Tom High': [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-    },
-  };
+  const predefinedPatterns = generateAllPatterns(drumSounds, getStepCount(DEFAULTS.STEP_COUNT));
 
   const [pattern, setPattern] = useState(() => getCurrentPattern(drumSounds, stepCount));
 
@@ -842,7 +803,7 @@ export const useDrumMachine = (drumSounds) => {
     toggleLoopAt,
     handleLoopVolumeChangeAt,
     playSound,
-    predefinedPatterns: getPredefinedPatterns(drumSounds, stepCount),
+    predefinedPatterns: generateAllPatterns(drumSounds, stepCount),
     analyser: analyserRef.current,
     getSharablePatternUrl,
     // Export loops for audio export
