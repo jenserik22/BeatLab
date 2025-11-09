@@ -5,13 +5,17 @@ import {
   setCurrentPattern,
   getSavedPatterns,
   setSavedPatterns,
-  normalizePatternData,
 } from '../utils/storage';
 import { DEFAULTS, LOOPS_CONFIG } from '../constants/config';
 import { getPredefinedPatterns } from '../patterns';
-import { getStepCount, setStepCount, adaptPatternToStepCount } from '../utils/storage';
+import { getStepCount, setStepCount } from '../utils/storage';
 import { encodePatternPayload } from '../utils/url';
 import { savePattern as savePatternToRemote } from '../services/shareStore';
+import {
+  buildPatternData,
+  adaptPatternToStepCount as adaptPattern,
+  createEmptyPattern,
+} from '../utils/patternBuilder';
 
 const DEBUG = false;
 const debugLog = (...args) => {
@@ -49,16 +53,9 @@ const resolveBaseShareUrl = () => {
 
 export const useDrumMachine = (drumSounds) => {
   const [stepCount, setStepCountState] = useState(getStepCount(DEFAULTS.STEP_COUNT));
-  const createEmptyPattern = () => {
-    const emptyPattern = {};
-    drumSounds.forEach(sound => {
-      emptyPattern[sound.name] = Array(stepCount).fill(false);
-    });
-    return emptyPattern;
-  };
 
   const predefinedPatterns = {
-    'Empty': createEmptyPattern(),
+    'Empty': createEmptyPattern(drumSounds, getStepCount(DEFAULTS.STEP_COUNT)),
     'Rock Beat': {
       'Kick': [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
       'Snare': [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -584,7 +581,7 @@ export const useDrumMachine = (drumSounds) => {
   const handleStepCountChange = (e) => {
     const next = parseInt(e.target.value, 10);
     if (!Number.isInteger(next) || next <= 0) return;
-    const adapted = adaptPatternToStepCount(patternRef.current, drumSounds, next);
+    const adapted = adaptPattern(patternRef.current, drumSounds, next);
     setPattern(adapted);
     setStepCountState(next);
     setStepCount(next);
@@ -593,7 +590,7 @@ export const useDrumMachine = (drumSounds) => {
   const loadPattern = useCallback((patternName, patternData) => {
     if (patternData.pattern) { // Check for new format
       const newStepCount = patternData.stepCount || stepCount;
-      const target = adaptPatternToStepCount(patternData.pattern, drumSounds, newStepCount);
+      const target = adaptPattern(patternData.pattern, drumSounds, newStepCount);
       setPattern(target);
       if (patternData.bpm) {
         setBpm(patternData.bpm);
@@ -622,7 +619,7 @@ export const useDrumMachine = (drumSounds) => {
         Number.isFinite(patternData.loop6Volume) ? patternData.loop6Volume : DEFAULTS.VOLUME_DB,
       ]);
     } else { // For backward compatibility
-      setPattern(adaptPatternToStepCount(patternData, drumSounds, stepCount));
+      setPattern(adaptPattern(patternData, drumSounds, stepCount));
     }
     setCurrentPatternName(patternName);
     handleStop(); // Stop playback when changing pattern
@@ -631,28 +628,17 @@ export const useDrumMachine = (drumSounds) => {
   const savePattern = () => {
     const patternName = prompt('Enter a name for your pattern:');
     if (patternName) {
-      const patternData = {
-        pattern,
+      const patternData = buildPatternData(pattern, {
+        bpm,
+        stepCount,
         drumVolumes,
         masterVolume,
         filterFreq,
         filterQ,
-        stepCount,
-        loop1Playing: !!loopPlaying[0],
-        loop1Volume: loopVolume[0],
-        loop2Playing: !!loopPlaying[1],
-        loop2Volume: loopVolume[1],
-        loop3Playing: !!loopPlaying[2],
-        loop3Volume: loopVolume[2],
-        loop4Playing: !!loopPlaying[3],
-        loop4Volume: loopVolume[3],
-        loop5Playing: !!loopPlaying[4],
-        loop5Volume: loopVolume[4],
-        loop6Playing: !!loopPlaying[5],
-        loop6Volume: loopVolume[5],
-      };
-      const normalized = normalizePatternData(patternData, drumSounds, stepCount);
-      const newSavedPatterns = { ...savedPatterns, [patternName]: normalized };
+        loopPlaying,
+        loopVolume,
+      }, drumSounds);
+      const newSavedPatterns = { ...savedPatterns, [patternName]: patternData };
       setSavedPatternsState(newSavedPatterns);
       setSavedPatterns(newSavedPatterns);
       setCurrentPatternName(patternName);
@@ -767,28 +753,16 @@ export const useDrumMachine = (drumSounds) => {
 
 
   const buildShareData = () => {
-    const patternData = {
-      pattern,
+    return buildPatternData(pattern, {
       bpm,
       stepCount,
       drumVolumes,
       masterVolume,
       filterFreq,
       filterQ,
-      loop1Playing: !!loopPlaying[0],
-      loop1Volume: loopVolume[0],
-      loop2Playing: !!loopPlaying[1],
-      loop2Volume: loopVolume[1],
-      loop3Playing: !!loopPlaying[2],
-      loop3Volume: loopVolume[2],
-      loop4Playing: !!loopPlaying[3],
-      loop4Volume: loopVolume[3],
-      loop5Playing: !!loopPlaying[4],
-      loop5Volume: loopVolume[4],
-      loop6Playing: !!loopPlaying[5],
-      loop6Volume: loopVolume[5],
-    };
-    return normalizePatternData(patternData, drumSounds, stepCount);
+      loopPlaying,
+      loopVolume,
+    }, drumSounds);
   };
 
   const getSharablePatternUrl = async () => {
