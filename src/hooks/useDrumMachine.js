@@ -91,26 +91,9 @@ export const useDrumMachine = (drumSounds) => {
   const [masterVolume, setMasterVolume] = useState(DEFAULTS.VOLUME_DB);
   const [loopPlaying, setLoopPlaying] = useState(() => Array(LOOPS_CONFIG.length).fill(false));
   const [loopVolume, setLoopVolume] = useState(() => Array(LOOPS_CONFIG.length).fill(DEFAULTS.VOLUME_DB));
-  const loop1Synth = useRef(null);
-  const loop1 = useRef(null);
-
-  const loop2Synth = useRef(null);
-  const loop2 = useRef(null);
-
-  const loop3Synth = useRef(null);
-  const loop3 = useRef(null);
-
-  const loop4Synth = useRef(null);
-  const loop4 = useRef(null);
-
-  const loop5Synth = useRef(null);
-  const loop5 = useRef(null);
-
-  const loop6Synth = useRef(null);
-  const loop6 = useRef(null);
-
-  const loopRefs = useMemo(() => [loop1, loop2, loop3, loop4, loop5, loop6], []);
-  const loopSynthRefs = [loop1Synth, loop2Synth, loop3Synth, loop4Synth, loop5Synth, loop6Synth];
+  
+  const loopSynths = useRef([]);
+  const loops = useRef([]);
 
   const [filterFreq, setFilterFreq] = useState(DEFAULTS.FILTER_FREQ);
   const [filterQ, setFilterQ] = useState(DEFAULTS.FILTER_Q);
@@ -187,202 +170,10 @@ export const useDrumMachine = (drumSounds) => {
     debugLog('Tone.js instruments initialized.');
 
     const chorus = registerEffectNode(new Tone.Chorus(4, 2.5, 0.5).connect(masterVol.current));
-    chorus.start();
-    const delay = registerEffectNode(new Tone.FeedbackDelay("8n", 0.5).connect(chorus));
-    loop1Synth.current = new Tone.FMSynth({
-      harmonicity: 3,
-      modulationIndex: 10,
-      detune: 0,
-      oscillator: {
-        type: "sine"
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.01,
-        sustain: 1,
-        release: 0.5
-      },
-      modulation: {
-        type: "square"
-      },
-      modulationEnvelope: {
-        attack: 0.5,
-        decay: 0,
-        sustain: 1,
-        release: 0.5
-      }
-    }).connect(delay);
-
-    const arpNotes = ["C4", "E4", "G4", "B4", "C5", "B4", "G4", "E4"];
-    const arpPattern = [
-      { time: "0:0", note: arpNotes[0], duration: "8n" },
-      { time: "0:1", note: arpNotes[1], duration: "16n" },
-      { time: "0:2", note: arpNotes[2], duration: "8n" },
-      { time: "0:3", note: arpNotes[3], duration: "16n" },
-      { time: "1:0", note: arpNotes[4], duration: "8n" },
-      { time: "1:1", note: arpNotes[5], duration: "16n" },
-      { time: "1:2", note: arpNotes[6], duration: "8n" },
-      { time: "1:3", note: arpNotes[7], duration: "16n" },
-    ];
-    loop1.current = new Tone.Part((time, value) => {
-      loop1Synth.current.triggerAttackRelease(value.note, value.duration, time);
-    }, arpPattern);
-    loop1.current.loop = true;
-    loop1.current.loopEnd = "2m";
-
-    loop2Synth.current = new Tone.PolySynth(Tone.Synth, {
-      oscillator: {
-        type: "triangle"
-      },
-      envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 1
-      }
-    }).connect(masterVol.current);
-
-    const pianoChords = [
-      { time: "0:0", notes: ["C4", "E4", "G4"] },
-      { time: "0:2", notes: ["G3", "B3", "D4"] },
-      { time: "1:0", notes: ["A3", "C4", "E4"] },
-      { time: "1:2", notes: ["F3", "A3", "C4"] }
-    ];
-    loop2.current = new Tone.Part((time, value) => {
-      loop2Synth.current.triggerAttackRelease(value.notes, "2n", time);
-    }, pianoChords);
-    loop2.current.loop = true;
-    loop2.current.loopEnd = "2m";
-
-    const technoFilter = registerEffectNode(new Tone.Filter(1200, "lowpass").connect(masterVol.current));
-    const technoDistortion = registerEffectNode(new Tone.Distortion(0.4).connect(technoFilter));
-    loop3Synth.current = new Tone.MonoSynth({
-      oscillator: {
-        type: "sawtooth"
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.2,
-        sustain: 0.2,
-        release: 0.1
-      }
-    }).connect(technoDistortion);
-
-    const technoPattern = [
-      { time: "0:0", note: "C3", duration: "8n" },
-      { time: "0:1.5", note: "C3", duration: "16n" },
-      { time: "0:2", note: "G2", duration: "8n" },
-      { time: "0:3", note: "G2", duration: "16n" },
-      { time: "1:0", note: "C3", duration: "8n" },
-      { time: "1:1.5", note: "C3", duration: "16n" },
-      { time: "1:2", note: "A2", duration: "8n" },
-      { time: "1:3", note: "A2", duration: "16n" },
-    ];
-    loop3.current = new Tone.Part((time, value) => {
-      loop3Synth.current.triggerAttackRelease(value.note, value.duration, time);
-    }, technoPattern);
-    loop3.current.loop = true;
-    loop3.current.loopEnd = "2m";
-
-    const padFilter = registerEffectNode(new Tone.Filter(200, "lowpass").connect(masterVol.current));
-    loop4Synth.current = new Tone.PolySynth(Tone.FMSynth, {
-      harmonicity: 1,
-      modulationIndex: 10,
-      detune: 0,
-      oscillator: {
-        type: "sine"
-      },
-      envelope: {
-        attack: 0.8,
-        decay: 0.4,
-        sustain: 0.8,
-        release: 2
-      },
-      modulation: {
-        type: "sine"
-      },
-      modulationEnvelope: {
-        attack: 0.8,
-        decay: 0,
-        sustain: 1,
-        release: 2
-      }
-    }).connect(padFilter);
-
-    const padChords = [
-      { time: "0:0", notes: ["C2", "G2", "C3", "E3"] },
-      { time: "2:0", notes: ["F2", "C3", "F3", "A3"] },
-      { time: "4:0", notes: ["G2", "D3", "G3", "B3"] },
-      { time: "6:0", notes: ["E2", "B2", "E3", "G#3"] }
-    ];
-    loop4.current = new Tone.Part((time, value) => {
-      loop4Synth.current.triggerAttackRelease(value.notes, "4m", time);
-    }, padChords);
-    loop4.current.loop = true;
-    loop4.current.loopEnd = "4m";
-
-    const pluckReverb = registerEffectNode(new Tone.Reverb(5).connect(masterVol.current));
-    loop5Synth.current = new Tone.PluckSynth().connect(pluckReverb);
-
-    const pluckNotes = [
-      { time: "0:0", note: "C5" },
-      { time: "0:1", note: "E5" },
-      { time: "0:2", note: "G5" },
-      { time: "0:3", note: "B5" },
-      { time: "1:0", note: "C6" },
-      { time: "1:1", note: "B5" },
-      { time: "1:2", note: "G5" },
-      { time: "1:3", note: "E5" },
-      { time: "2:0", note: "D5" },
-      { time: "2:1", note: "F5" },
-      { time: "2:2", note: "A5" },
-      { time: "2:3", note: "C6" },
-      { time: "3:0", note: "B5" },
-      { time: "3:1", note: "A5" },
-      { time: "3:2", note: "F5" },
-      { time: "3:3", note: "D5" }
-    ];
-    loop5.current = new Tone.Part((time, value) => {
-      loop5Synth.current.triggerAttackRelease(value.note, "8n", time);
-    }, pluckNotes);
-    loop5.current.loop = true;
-    loop5.current.loopEnd = "2m";
-
-    const bitCrusher = registerEffectNode(new Tone.BitCrusher(4).connect(masterVol.current));
-    loop6Synth.current = new Tone.NoiseSynth({
-      noise: {
-        type: "white"
-      },
-      envelope: {
-        attack: 0.001,
-        decay: 0.1,
-        sustain: 0
-      }
-    }).connect(bitCrusher);
-
-    const glitchPattern = [
-      { time: "0:0:3" },
-      { time: "0:1:2" },
-      { time: "0:2:1" },
-      { time: "0:3:0" },
-      { time: "1:0:3" },
-      { time: "1:1:2" },
-      { time: "1:2:1" },
-      { time: "1:3:0" },
-      { time: "2:0:2" },
-      { time: "2:1:1" },
-      { time: "2:2:3" },
-      { time: "2:3:0" },
-      { time: "3:0:1" },
-      { time: "3:1:3" },
-      { time: "3:2:2" },
-      { time: "3:3:0" },
-    ];
-    loop6.current = new Tone.Part((time) => {
-      loop6Synth.current.triggerAttackRelease("16n", time);
-    }, glitchPattern);
-    loop6.current.loop = true;
-    loop6.current.loopEnd = "2m";
+    // Create all loops using factory
+    const { synthRefs, loopRefs } = createBuiltinLoops(masterVol.current, registerEffectNode);
+    loopSynths.current = synthRefs;
+    loops.current = loopRefs;
 
     // Setup Tone.Sequence once
     sequenceRef.current = new Tone.Sequence(
@@ -419,18 +210,18 @@ export const useDrumMachine = (drumSounds) => {
         sequenceRef.current = null;
       }
 
-      loopRefs.forEach(loopRef => {
-        if (loopRef.current) {
+      loops.current.forEach(loopRef => {
+        if (loopRef?.current) {
           loopRef.current.stop(0);
           loopRef.current.dispose();
           loopRef.current = null;
         }
       });
 
-      loopSynthRefs.forEach(loopSynthRef => {
-        if (loopSynthRef.current) {
-          loopSynthRef.current.dispose();
-          loopSynthRef.current = null;
+      loopSynths.current.forEach(synthRef => {
+        if (synthRef?.current) {
+          synthRef.current.dispose();
+          synthRef.current = null;
         }
       });
 
@@ -507,8 +298,8 @@ export const useDrumMachine = (drumSounds) => {
     debugLog('Play button clicked. Transport state:', Tone.Transport.state);
     if (Tone.Transport.state !== 'started') {
       Tone.Transport.start();
-      loopRefs.forEach(loopRef => {
-        if (loopRef.current) {
+      loops.current.forEach(loopRef => {
+        if (loopRef?.current) {
           loopRef.current.start(0);
         }
       });
@@ -520,15 +311,15 @@ export const useDrumMachine = (drumSounds) => {
   const handleStop = useCallback(() => {
     debugLog('Stop button clicked. Transport state:', Tone.Transport.state);
     Tone.Transport.stop();
-    loopRefs.forEach(loopRef => {
-      if (loopRef.current) {
+    loops.current.forEach(loopRef => {
+      if (loopRef?.current) {
         loopRef.current.stop(0);
       }
     });
     setIsPlaying(false);
     setCurrentStep(-1); // Reset playhead
     debugLog('Transport stopped.');
-  }, [loopRefs]);
+  }, []);
 
   const applyBpm = (value) => {
     const numeric = Number(value);
@@ -660,18 +451,16 @@ export const useDrumMachine = (drumSounds) => {
   }, [filterQ]);
 
   useEffect(() => {
-    const refs = [loop1, loop2, loop3, loop4, loop5, loop6];
-    refs.forEach((ref, i) => {
-      if (ref.current) {
+    loops.current.forEach((ref, i) => {
+      if (ref?.current) {
         ref.current.mute = !loopPlaying[i];
       }
     });
   }, [loopPlaying]);
 
   useEffect(() => {
-    const synthRefs = [loop1Synth, loop2Synth, loop3Synth, loop4Synth, loop5Synth, loop6Synth];
-    synthRefs.forEach((ref, i) => {
-      if (ref.current) {
+    loopSynths.current.forEach((ref, i) => {
+      if (ref?.current) {
         ref.current.volume.value = loopVolume[i];
       }
     });
@@ -808,11 +597,11 @@ export const useDrumMachine = (drumSounds) => {
     analyser: analyserRef.current,
     getSharablePatternUrl,
     // Export loops for audio export
-    loop1: loop1.current,
-    loop2: loop2.current,
-    loop3: loop3.current,
-    loop4: loop4.current,
-    loop5: loop5.current,
-    loop6: loop6.current,
+    loop1: loops.current[0]?.current || null,
+    loop2: loops.current[1]?.current || null,
+    loop3: loops.current[2]?.current || null,
+    loop4: loops.current[3]?.current || null,
+    loop5: loops.current[4]?.current || null,
+    loop6: loops.current[5]?.current || null,
   };
 };
