@@ -19,6 +19,7 @@ import {
   adaptPatternToStepCount as adaptPattern,
   createEmptyPattern,
 } from '../utils/patternBuilder';
+import { createBuiltinLoops } from '../utils/loopFactory';
 
 const DEBUG = false;
 const debugLog = (...args) => {
