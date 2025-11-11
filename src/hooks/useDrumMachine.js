@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
 import {
   getCurrentPattern,
@@ -169,7 +169,6 @@ export const useDrumMachine = (drumSounds) => {
     };
     debugLog('Tone.js instruments initialized.');
 
-    const chorus = registerEffectNode(new Tone.Chorus(4, 2.5, 0.5).connect(masterVol.current));
     // Create all loops using factory
     const { synthRefs, loopRefs } = createBuiltinLoops(masterVol.current, registerEffectNode);
     loopSynths.current = synthRefs;

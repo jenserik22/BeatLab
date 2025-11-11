@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import * as Tone from 'tone';
-import { renderAudioOffline, calculateExportDuration, encodeWAV, downloadAudioFile } from '../utils/audioExportRenderer';
 
 const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes, 
                           masterVolume, filterFreq, filterQ, loopPlaying, loopVolume,
@@ -13,23 +12,6 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [error, setError] = useState(null);
-
-  const durationOptions = {
-    rounds: [
-      { value: '1', label: '1 round' },
-      { value: '2', label: '2 rounds' },
-      { value: '4', label: '4 rounds' },
-      { value: '8', label: '8 rounds' },
-      { value: '16', label: '16 rounds' },
-    ],
-    seconds: [
-      { value: '10', label: '10 seconds' },
-      { value: '30', label: '30 seconds' },
-      { value: '60', label: '1 minute' },
-      { value: '120', label: '2 minutes' },
-      { value: '180', label: '3 minutes' },
-    ],
-  };
 
   const encodeWAV = (audioBuffer) => {
     const sampleRate = audioBuffer.sampleRate;
@@ -163,137 +145,6 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
     }, duration);
   }, [calculateDurationInSeconds, drumSounds, pattern, drumVolumes, masterVolume, filterFreq, filterQ, stepCount, bpm]);
 
-  // Store the original complex version for later
-  const renderAudioOfflineComplex = useCallback(async () => {
-    const duration = calculateDurationInSeconds();
-    
-    console.log('[EXPORT CRITICAL] Using COMPLEX render with proper audio graph');
-    
-    // CRITICAL FIX: Proper timing calculation
-    // Each step is a 16th note = 1/4 of a beat
-    // Pattern length = (stepCount / 4) * (60 / bpm)
-    const patternLengthInSeconds = (stepCount / 4) * (60 / bpm);
-    const targetRounds = Math.ceil(duration / patternLengthInSeconds);
-    
-    // Each 16th note duration = 60 / (bpm * 4)
-    const sixteenthNoteDuration = 60 / (bpm * 4);
-    
-    console.log('[EXPORT CRITICAL] Complex render settings:', {
-      bpm,
-      stepCount,
-      duration,
-      patternLengthInSeconds,
-      targetRounds,
-      sixteenthNoteDuration,
-    });
-
-    return await Tone.Offline(({ transport }) => {
-      console.log('[EXPORT CRITICAL] Inside COMPLEX Tone.Offline callback');
-      
-      // TEST: First, test if basic synth-to-destination works
-      const testSynth = new Tone.Synth().toDestination();
-      testSynth.triggerAttackRelease('C5', '4n', 0.5);
-      console.log('[EXPORT AUDIO TEST] Test C5 scheduled');
-
-      // Create PROPER audio graph for drums
-      const masterVolNode = new Tone.Volume(masterVolume || -10);
-      masterVolNode.toDestination();
-      
-      const filterNode = new Tone.Filter(filterFreq || 15000, 'lowpass').connect(masterVolNode);
-      filterNode.Q.value = filterQ || 1;
-
-      // Create all synths
-      const synths = {};
-      drumSounds.forEach(sound => {
-        const volValue = drumVolumes[sound.name] || -10;
-        const volNode = new Tone.Volume(volValue).connect(filterNode);
-        
-        if (sound.type === 'membrane') {
-          synths[sound.name] = new Tone.MembraneSynth({
-            envelope: { attack: 0.005, decay: 0.4, sustain: 0, release: 0.1 }
-          }).connect(volNode);
-        } else {
-          synths[sound.name] = new Tone.NoiseSynth({
-            noise: { type: 'white' },
-            envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.05 },
-          }).connect(volNode);
-        }
-      });
-
-      // Add loops if enabled
-      let loopCount = 0;
-      if (loopPlaying && loopPlaying.length > 0) {
-        const loops = [loop1, loop2, loop3, loop4, loop5, loop6];
-        const loopSynths = [
-          new Tone.FMSynth().connect(masterVolNode),
-          new Tone.PolySynth(Tone.Synth).connect(masterVolNode),
-          new Tone.MonoSynth().connect(masterVolNode),
-          new Tone.PolySynth(Tone.FMSynth).connect(masterVolNode),
-          new Tone.PluckSynth().connect(masterVolNode),
-          new Tone.NoiseSynth().connect(masterVolNode),
-        ];
-        
-        loopPlaying.forEach((isEnabled, index) => {
-          if (isEnabled && loops[index]) {
-            const loopPart = new Tone.Part((time, value) => {
-              // Loop triggering logic would go here
-              if (index === 0 && value.note) {
-                loopSynths[0].triggerAttackRelease(value.note, value.duration, time);
-              }
-            }, []);
-            
-            loopPart.start(0);
-            loopPart.loop = true;
-            loopCount++;
-          }
-        });
-      }
-      
-      console.log('[EXPORT DEBUG] Loops enabled:', loopCount);
-
-      console.log('[EXPORT CRITICAL] Pattern keys:', Object.keys(pattern));
-      console.log('[EXPORT CRITICAL] DrumSounds:', drumSounds.map(s => s.name));
-
-      // Schedule all notes with corrected timing
-      let noteCount = 0;
-      for (let round = 0; round < targetRounds; round++) {
-        drumSounds.forEach((sound) => {
-          const soundPattern = pattern[sound.name];
-          if (soundPattern && Array.isArray(soundPattern)) {
-            soundPattern.forEach((isActive, stepIndex) => {
-              if (isActive) {
-                const stepTime = round * patternLengthInSeconds + stepIndex * sixteenthNoteDuration;
-                
-                // DEBUG each note
-                if (noteCount < 5) { // Log first 5 notes
-                  console.log(`[EXPORT NOTE] ${sound.name} at ${stepTime.toFixed(3)}s`);
-                }
-                
-                if (sound.type === 'membrane') {
-                  synths[sound.name].triggerAttackRelease(sound.note, '8n', stepTime);
-                } else {
-                  synths[sound.name].triggerAttackRelease('8n', stepTime);
-                }
-                noteCount++;
-              }
-            });
-          }
-        });
-      }
-      
-      console.log('[EXPORT CRITICAL] Scheduled', noteCount, 'notes for export');
-
-      transport.bpm.value = bpm;
-      transport.schedule((time) => {
-        const progress = (time / duration) * 100;
-        setExportProgress(Math.min(progress, 99));
-      }, [duration]);
-
-      console.log('[EXPORT CRITICAL] Starting transport, duration:', duration, 'seconds');
-      transport.start(0).stop(duration);
-    }, duration);
-  }, [calculateDurationInSeconds, drumSounds, pattern, drumVolumes, masterVolume, filterFreq, filterQ, loopPlaying, loop1, loop2, loop3, loop4, loop5, loop6]);
-
   const handleExport = useCallback(async () => {
     setIsExporting(true);
     setExportProgress(0);
@@ -322,7 +173,7 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
       setError(`Export failed: ${err.message}`);
       setIsExporting(false);
     }
-  }, [exportFormat, fileName, renderAudioOffline]);
+  }, [fileName, renderAudioOffline]);
 
   const handleDurationValueChange = (e) => {
     setDurationValue(e.target.value);
