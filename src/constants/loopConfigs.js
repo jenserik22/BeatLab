@@ -212,10 +212,20 @@ export const LOOP_CONFIGS = [
     
     synthConfig: {
       type: 'PluckSynth',
-      options: {}
+      options: {
+        attackNoise: 5,
+        dampening: 4000,
+        resonance: 0.98,
+        volume: 5
+      }
     },
     
     effects: [
+      {
+        type: 'Volume',
+        options: [10],
+        connectTo: 'next'
+      },
       {
         type: 'Reverb',
         options: [5],
@@ -260,8 +270,8 @@ export const LOOP_CONFIGS = [
         },
         envelope: {
           attack: 0.001,
-          decay: 0.1,
-          sustain: 0
+          decay: 0.2,
+          sustain: 0.1
         }
       }
     },
