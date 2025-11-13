@@ -9,7 +9,6 @@ import {
 import { DEFAULTS, LOOPS_CONFIG } from '../constants/config';
 import {
   generateAllPatterns,
-  generatePattern,
 } from '../utils/patternFactory';
 import { getStepCount, setStepCount } from '../utils/storage';
 import { encodePatternPayload } from '../utils/url';
@@ -17,7 +16,6 @@ import { savePattern as savePatternToRemote } from '../services/shareStore';
 import {
   buildPatternData,
   adaptPatternToStepCount as adaptPattern,
-  createEmptyPattern,
 } from '../utils/patternBuilder';
 import { createBuiltinLoops } from '../utils/loopFactory';
 
