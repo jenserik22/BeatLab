@@ -12,6 +12,7 @@ import Visualizer from './components/Visualizer';
 import PulsingBackground from './components/PulsingBackground';
 
 import Patterns from './components/Patterns';
+import KitSelector from './components/KitSelector';
 import { useDrumMachine } from './hooks/useDrumMachine';
 import { loadPatternById } from './services/shareStore';
 
@@ -163,6 +164,7 @@ function App() {
             drumSounds={drumSounds}
             pattern={drumMachine.pattern}
           />
+            <KitSelector currentKit={drumMachine.currentKit} loadKit={drumMachine.loadKit} />
             <Patterns {...drumMachine} predefinedPatterns={drumMachine.predefinedPatterns} />
             <Sequencer {...drumMachine} drumSounds={drumSounds} />
             <Visualizer {...drumMachine} />

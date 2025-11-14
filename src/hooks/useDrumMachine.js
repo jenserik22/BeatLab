@@ -18,6 +18,8 @@ import {
   adaptPatternToStepCount as adaptPattern,
 } from '../utils/patternBuilder';
 import { createBuiltinLoops } from '../utils/loopFactory';
+import { createKitSynths, disposeKitSynths, getVelocityForStep } from '../utils/kitFactory';
+import { getDefaultKit } from '../constants/kitsConfig';
 
 const DEBUG = false;
 const debugLog = (...args) => {
@@ -65,11 +67,14 @@ export const useDrumMachine = (drumSounds) => {
   const [currentStep, setCurrentStep] = useState(-1);
   const [currentPatternName, setCurrentPatternName] = useState('Empty');
   const [savedPatterns, setSavedPatternsState] = useState(() => getSavedPatterns(drumSounds));
+  const [currentKit, setCurrentKit] = useState(getDefaultKit());
+  const [swing, setSwing] = useState(0);
 
   // Refs for Tone.js instruments
   const synths = useRef({});
   const sequenceRef = useRef(null); // Ref to store the Tone.Sequence instance
   const effectNodesRef = useRef([]);
+  const kitDataRef = useRef(null); // Stores { synths, drumVolumes, velocityShapes, effectNodes }
 
   // Use a ref to store the latest pattern state for the Tone.Sequence callback
   const patternRef = useRef(pattern);
@@ -129,42 +134,12 @@ export const useDrumMachine = (drumSounds) => {
     analyserRef.current = new Tone.Analyser('fft', 256);
     masterVol.current.connect(analyserRef.current);
 
-    drumVols.current = {};
-    drumSounds.forEach(sound => {
-      drumVols.current[sound.name] = new Tone.Volume(drumVolumes[sound.name]).connect(filter.current);
-    });
-
-    synths.current = {
-      'Kick': new Tone.MembraneSynth({
-        envelope: { attack: 0.005, decay: 0.4, sustain: 0, release: 0.1 }
-      }).connect(drumVols.current['Kick']),
-      'Snare': new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.05 },
-      }).connect(drumVols.current['Snare']),
-      'Closed Hi-Hat': new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.02 },
-      }).connect(drumVols.current['Closed Hi-Hat']),
-      'Open Hi-Hat': new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.001, decay: 0.2, sustain: 0.05, release: 0.05 },
-      }).connect(drumVols.current['Open Hi-Hat']),
-      'Clap': new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.05 },
-      }).connect(drumVols.current['Clap']),
-      'Crash': new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.005, decay: 0.5, sustain: 0.1, release: 0.5 },
-      }).connect(drumVols.current['Crash']),
-      'Tom Low': new Tone.MembraneSynth({
-        envelope: { attack: 0.005, decay: 0.3, sustain: 0, release: 0.1 }
-      }).connect(drumVols.current['Tom Low']),
-      'Tom High': new Tone.MembraneSynth({
-        envelope: { attack: 0.005, decay: 0.3, sustain: 0, release: 0.1 }
-      }).connect(drumVols.current['Tom High']),
-    };
+    // Create drum synths using kit factory
+    const kitData = createKitSynths(currentKit, filter.current, registerEffectNode);
+    kitDataRef.current = kitData;
+    synths.current = kitData.synths;
+    drumVols.current = kitData.drumVolumes;
+    
     debugLog('Tone.js instruments initialized.');
 
     // Create all loops using factory
@@ -178,10 +153,11 @@ export const useDrumMachine = (drumSounds) => {
         setCurrentStep(step);
         drumSounds.forEach(sound => {
           if (patternRef.current[sound.name][step]) {
+            const velocity = getVelocityForStep(kitDataRef.current?.velocityShapes, sound.name, step);
             if (sound.type === 'membrane') {
-              synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time);
+              synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time, velocity);
             } else if (sound.type === 'noise') {
-              synths.current[sound.name].triggerAttackRelease('8n', time);
+              synths.current[sound.name].triggerAttackRelease('8n', time, velocity);
             }
           }
         });
@@ -222,10 +198,12 @@ export const useDrumMachine = (drumSounds) => {
         }
       });
 
-      Object.values(synths.current).forEach(synth => synth.dispose());
+      // Dispose kit synths using factory
+      if (kitDataRef.current) {
+        disposeKitSynths(kitDataRef.current);
+        kitDataRef.current = null;
+      }
       synths.current = {};
-
-      Object.values(drumVols.current).forEach(volumeNode => volumeNode.dispose());
       drumVols.current = {};
 
       effectNodesRef.current.forEach(node => {
@@ -282,6 +260,12 @@ export const useDrumMachine = (drumSounds) => {
     Tone.Transport.bpm.value = bpm;
   }, [bpm]);
 
+  // Update swing when swing state changes
+  useEffect(() => {
+    debugLog('Swing changed to:', swing);
+    Tone.Transport.swing = swing;
+  }, [swing]);
+
   const toggleStep = (soundName, stepIndex) => {
     setPattern(prevPattern => ({
       ...prevPattern,
@@ -336,6 +320,65 @@ export const useDrumMachine = (drumSounds) => {
     setStepCountState(next);
     setStepCount(next);
   };
+
+  const loadKit = useCallback((kit) => {
+    debugLog('Loading kit:', kit.name);
+    handleStop(); // Stop playback when changing kit
+
+    // Dispose old kit
+    if (kitDataRef.current) {
+      disposeKitSynths(kitDataRef.current);
+      kitDataRef.current = null;
+    }
+    synths.current = {};
+    drumVols.current = {};
+    effectNodesRef.current = [];
+
+    // Create new kit synths
+    const registerEffectNode = (node) => {
+      effectNodesRef.current.push(node);
+      return node;
+    };
+
+    const kitData = createKitSynths(kit, filter.current, registerEffectNode);
+    kitDataRef.current = kitData;
+    synths.current = kitData.synths;
+    drumVols.current = kitData.drumVolumes;
+
+    // Apply kit defaults
+    if (kit.defaultBpm) {
+      setBpm(kit.defaultBpm);
+    }
+    if (kit.defaultSwing !== undefined) {
+      setSwing(kit.defaultSwing);
+    }
+
+    // Rebuild sequence with new synths
+    if (sequenceRef.current) {
+      sequenceRef.current.stop();
+      sequenceRef.current.dispose();
+    }
+    sequenceRef.current = new Tone.Sequence(
+      (time, step) => {
+        setCurrentStep(step);
+        drumSounds.forEach(sound => {
+          if (patternRef.current[sound.name][step]) {
+            const velocity = getVelocityForStep(kitDataRef.current?.velocityShapes, sound.name, step);
+            if (sound.type === 'membrane') {
+              synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time, velocity);
+            } else if (sound.type === 'noise') {
+              synths.current[sound.name].triggerAttackRelease('8n', time, velocity);
+            }
+          }
+        });
+      },
+      Array.from({ length: stepCount }, (_, i) => i),
+      '16n'
+    ).start(0);
+
+    setCurrentKit(kit);
+    debugLog('Kit loaded:', kit.name);
+  }, [drumSounds, stepCount, filter, handleStop]);
 
   const loadPattern = useCallback((patternName, patternData) => {
     if (patternData.pattern) { // Check for new format
@@ -499,6 +542,10 @@ export const useDrumMachine = (drumSounds) => {
     setMasterVolume(parseFloat(e.target.value));
   };
 
+  const handleSwingChange = (e) => {
+    setSwing(parseFloat(e.target.value));
+  };
+
 
   const buildShareData = () => {
     return buildPatternData(pattern, {
@@ -574,12 +621,16 @@ export const useDrumMachine = (drumSounds) => {
     filterQ,
     activePad,
     isLooping,
+    swing,
+    currentKit,
     toggleStep,
     handlePlay,
     handleStop,
     handleBpmChange,
     handleStepCountChange,
+    handleSwingChange,
     loadPattern,
+    loadKit,
     savePattern,
     deletePattern,
     toggleLoop,

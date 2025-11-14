@@ -3,7 +3,7 @@ import { dbToPercent, percentToDb } from '../utils/volume';
 import { DEFAULTS } from '../constants/config';
 import AudioExporter from './AudioExporter';
 
-const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl, drumSounds, pattern, drumVolumes, filterFreq, filterQ, loopPlaying, loopVolume, loop1, loop2, loop3, loop4, loop5, loop6 }) => {
+const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl, drumSounds, pattern, drumVolumes, filterFreq, filterQ, loopPlaying, loopVolume, loop1, loop2, loop3, loop4, loop5, loop6, swing, handleSwingChange }) => {
   const [shareStatus, setShareStatus] = useState(null);
   const shareTimeoutRef = useRef(null);
 
@@ -99,6 +99,18 @@ const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handleP
           max="180"
           value={bpm}
           onChange={handleBpmChange}
+        />
+      </div>
+      <div className="swing-control">
+        <label htmlFor="swing">Swing: {Math.round(swing * 100)}%</label>
+        <input
+          type="range"
+          id="swing"
+          min="0"
+          max="0.5"
+          step="0.01"
+          value={swing}
+          onChange={handleSwingChange}
         />
       </div>
       <div className="stepcount-control">
