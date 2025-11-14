@@ -757,3 +757,233 @@ margin-top: 40px;
   font-weight: normal;
   margin-left: 4px;
 }
+
+/* Custom Dropdown Styling */
+.kit-selector {
+  padding: 1px 15px 15px;
+  background-color: #2a2a4a;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+  width: 90%;
+  max-width: 800px;
+}
+
+.kit-selector h3 {
+  color: #00ffff;
+  margin-bottom: 15px;
+}
+
+.custom-dropdown {
+  position: relative;
+  display: inline-block;
+  width: auto;
+}
+
+.custom-dropdown-toggle {
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 10px 35px 10px 15px;
+  font-size: 1em;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 150px;
+  text-align: left;
+  position: relative;
+  white-space: nowrap;
+}
+
+.custom-dropdown-toggle:hover {
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.custom-dropdown-toggle::after {
+  content: '▼';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00ffff;
+  font-size: 0.8em;
+  transition: transform 0.3s ease;
+}
+
+.custom-dropdown.show .custom-dropdown-toggle::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.custom-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #1a1a2e;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.custom-dropdown.show .custom-dropdown-menu {
+  display: block;
+}
+
+.custom-dropdown-item {
+  padding: 10px 15px;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.custom-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.custom-dropdown-item:hover {
+  background-color: #2a2a4a;
+  color: #00ffff;
+}
+
+.custom-dropdown-item.selected {
+  background-color: #2a2a4a;
+  color: #00ffff;
+}
+
+/* Tooltip Styling */
+.tooltip-container {
+  position: absolute;
+  display: inline-block;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  white-space: normal;
+  max-width: 250px;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  z-index: 1001;
+  pointer-events: none;
+  margin-top: 5px;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(0, 255, 255, 0.3);
+}
+
+.tooltip.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Enhanced select styling (fallback for Transport step count) */
+select {
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 1em;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 35px;
+}
+
+select:hover {
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+select:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Swing control specific styling */
+.swing-control input[type="range"] {
+  -webkit-appearance: none;
+  width: 150px;
+  height: 8px;
+  border-radius: 5px;
+  background: #5a5a7a;
+  outline: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.swing-control input[type="range"]:hover {
+  opacity: 1;
+}
+
+.swing-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ff00ff;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(255, 0, 255, 0.7);
+  transition: all 0.3s ease;
+}
+
+.swing-control input[type="range"]::-webkit-slider-thumb:hover {
+  background: #ff33ff;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.swing-control input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ff00ff;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(255, 0, 255, 0.7);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.swing-control input[type="range"]::-moz-range-thumb:hover {
+  background: #ff33ff;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.9);
+  transform: scale(1.1);
+}
