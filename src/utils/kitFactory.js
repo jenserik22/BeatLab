@@ -55,7 +55,7 @@ export const createKitSynths = (kitConfig, destinationNode, registerEffectNode) 
   Object.entries(kitConfig.drums).forEach(([drumName, drumConfig]) => {
     try {
       // Create volume node for this drum
-      const volNode = new Tone.Volume(-10); // Default volume
+      const volNode = new Tone.Volume(-10);
       drumVolumes[drumName] = volNode;
 
       // Create the synth
