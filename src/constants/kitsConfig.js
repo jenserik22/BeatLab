@@ -13,6 +13,7 @@ export const KITS_CONFIG = [
     defaultSwing: 0,
     defaultFilterFreq: 20000,
     defaultFilterQ: 1,
+    masterVolume: -10, // No effects, baseline volume
     demoPattern: 'Rock Beat',
     velocityShapes: {
       'Kick': [1.0, 1.0, 1.0, 1.0], // Uniform
@@ -96,6 +97,7 @@ export const KITS_CONFIG = [
     defaultSwing: 0.12,
     defaultFilterFreq: 8000,
     defaultFilterQ: 1.5,
+    masterVolume: -6, // Slight boost to compensate for filters/bit-crusher
     demoPattern: 'Hip-Hop',
     velocityShapes: {
       'Kick': [1.0, 0.8, 1.0, 0.7], // 4-beat accent pattern
@@ -286,6 +288,7 @@ export const KITS_CONFIG = [
     defaultSwing: 0.08,
     defaultFilterFreq: 20000,
     defaultFilterQ: 1,
+    masterVolume: -6, // Slight boost to compensate for filters/distortion
     demoPattern: 'Hip-Hop',
     velocityShapes: {
       'Kick': [1.0, 0.9, 1.0, 0.8], // Hard hitting kicks
@@ -476,6 +479,7 @@ export const KITS_CONFIG = [
     defaultSwing: 0.18, // Classic 90s swing
     defaultFilterFreq: 12000,
     defaultFilterQ: 1.2,
+    masterVolume: -6, // Slight boost to compensate for filters/distortion
     demoPattern: 'Hip-Hop',
     velocityShapes: {
       'Kick': [1.0, 0.7, 1.0, 0.8], // Classic boom-bap accents

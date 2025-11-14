@@ -50,12 +50,15 @@ export const createKitSynths = (kitConfig, destinationNode, registerEffectNode) 
   const drumVolumes = {};
   const effectNodes = [];
   const velocityShapes = kitConfig.velocityShapes || {};
+  
+  // Apply kit-level master volume if specified
+  const masterVolume = kitConfig.masterVolume !== undefined ? kitConfig.masterVolume : -10;
 
   // Create each drum sound
   Object.entries(kitConfig.drums).forEach(([drumName, drumConfig]) => {
     try {
-      // Create volume node for this drum
-      const volNode = new Tone.Volume(-10);
+      // Create volume node for this drum using kit's master volume
+      const volNode = new Tone.Volume(masterVolume);
       drumVolumes[drumName] = volNode;
 
       // Create the synth
@@ -98,7 +101,7 @@ export const createKitSynths = (kitConfig, destinationNode, registerEffectNode) 
       console.error(`Error creating drum ${drumName}:`, error);
       // Create a fallback noise synth if something fails
       const fallbackSynth = new Tone.NoiseSynth();
-      const volNode = new Tone.Volume(-10);
+      const volNode = new Tone.Volume(masterVolume);
       drumVolumes[drumName] = volNode;
       synths[drumName] = fallbackSynth;
       fallbackSynth.connect(volNode);

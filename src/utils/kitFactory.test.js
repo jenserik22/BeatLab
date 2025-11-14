@@ -83,7 +83,7 @@ describe('kitFactory', () => {
 
       expect(Object.keys(result.drumVolumes).length).toBe(8);
       expect(result.drumVolumes['Kick']).toBeDefined();
-      expect(result.drumVolumes['Kick'].volume.value).toBe(-10); // Default volume
+      expect(result.drumVolumes['Kick'].volume.value).toBe(-6); // Lo-Fi Chill kit has masterVolume: -6
     });
 
     it('should return velocity shapes from the kit config', () => {
