@@ -106,6 +106,32 @@ export const useDrumMachine = (drumSounds) => {
   const filter = useRef(null);
   const analyserRef = useRef(null);
 
+  const rebuildSequencer = useCallback(() => {
+    if (sequenceRef.current) {
+      sequenceRef.current.dispose();
+    }
+    sequenceRef.current = new Tone.Sequence(
+      (time, step) => {
+        setCurrentStep(step);
+        drumSounds.forEach(sound => {
+          if (patternRef.current[sound.name][step]) {
+            const velocity = getVelocityForStep(kitDataRef.current?.velocityShapes, sound.name, step);
+            const targetSynth = synths.current[sound.name];
+            if (!targetSynth) return;
+
+            if (sound.type === 'membrane') {
+              targetSynth.triggerAttackRelease(sound.note, '8n', time, velocity);
+            } else if (sound.type === 'noise') {
+              targetSynth.triggerAttackRelease('8n', time, velocity);
+            }
+          }
+        });
+      },
+      Array.from({ length: stepCount }, (_, i) => i),
+      '16n'
+    ).start(0);
+  }, [drumSounds, stepCount]);
+
   // Initialize Tone.js instruments once
   useEffect(() => {
     debugLog('Initializing Tone.js instruments...');
@@ -148,23 +174,7 @@ export const useDrumMachine = (drumSounds) => {
     loops.current = loopRefs;
 
     // Setup Tone.Sequence once
-    sequenceRef.current = new Tone.Sequence(
-      (time, step) => {
-        setCurrentStep(step);
-        drumSounds.forEach(sound => {
-          if (patternRef.current[sound.name][step]) {
-            const velocity = getVelocityForStep(kitDataRef.current?.velocityShapes, sound.name, step);
-            if (sound.type === 'membrane') {
-              synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time, velocity);
-            } else if (sound.type === 'noise') {
-              synths.current[sound.name].triggerAttackRelease('8n', time, velocity);
-            }
-          }
-        });
-      },
-      Array.from({ length: stepCount }, (_, i) => i),
-      '16n'
-    ).start(0);
+    rebuildSequencer();
     debugLog('Tone.Sequence set up.');
 
     // Set loop points for the transport
@@ -352,29 +362,15 @@ export const useDrumMachine = (drumSounds) => {
     if (kit.defaultSwing !== undefined) {
       setSwing(kit.defaultSwing);
     }
+    if (kit.defaultFilterFreq !== undefined) {
+      setFilterFreq(kit.defaultFilterFreq);
+    }
+    if (kit.defaultFilterQ !== undefined) {
+      setFilterQ(kit.defaultFilterQ);
+    }
 
     // Rebuild sequence with new synths
-    if (sequenceRef.current) {
-      sequenceRef.current.stop();
-      sequenceRef.current.dispose();
-    }
-    sequenceRef.current = new Tone.Sequence(
-      (time, step) => {
-        setCurrentStep(step);
-        drumSounds.forEach(sound => {
-          if (patternRef.current[sound.name][step]) {
-            const velocity = getVelocityForStep(kitDataRef.current?.velocityShapes, sound.name, step);
-            if (sound.type === 'membrane') {
-              synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time, velocity);
-            } else if (sound.type === 'noise') {
-              synths.current[sound.name].triggerAttackRelease('8n', time, velocity);
-            }
-          }
-        });
-      },
-      Array.from({ length: stepCount }, (_, i) => i),
-      '16n'
-    ).start(0);
+    rebuildSequencer();
 
     setCurrentKit(kit);
     debugLog('Kit loaded:', kit.name);

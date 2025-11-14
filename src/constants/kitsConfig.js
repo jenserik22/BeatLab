@@ -686,6 +686,202 @@ export const KITS_CONFIG = [
         ]
       }
     }
+  },
+  {
+    id: 'rock-acoustic',
+    name: 'Rock/Acoustic Kit',
+    description: 'Realistic multi-sampled sounds with natural decay and room ambience.',
+    defaultBpm: 130,
+    defaultSwing: 0,
+    defaultFilterFreq: 20000,
+    defaultFilterQ: 1,
+    masterVolume: -8,
+    demoPattern: 'Rock Beat',
+    velocityShapes: {
+      'Kick': [1.0, 0.9],
+      'Snare': [0.8, 1.0],
+      'Closed Hi-Hat': [0.8, 0.6, 0.9, 0.5],
+      'Open Hi-Hat': [1.0],
+      'Crash': [1.0],
+    },
+    drums: {
+      'Kick': {
+        type: 'MembraneSynth',
+        options: {
+          pitchDecay: 0.04,
+          octaves: 6,
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.1 }
+        },
+        effects: [
+          { type: 'Distortion', options: [{ distortion: 0.05 }], connectTo: 'target' }
+        ]
+      },
+      'Snare': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'pink' },
+          envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+        },
+        effects: [
+          { type: 'Filter', options: [{ frequency: 1500, type: 'bandpass', Q: 2 }], connectTo: 'target' }
+        ]
+      },
+      'Closed Hi-Hat': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.01 }
+        },
+        effects: [
+          { type: 'Filter', options: [{ frequency: 6000, type: 'highpass' }], connectTo: 'target' }
+        ]
+      },
+      'Open Hi-Hat': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.05 }
+        },
+        effects: [
+          { type: 'Filter', options: [{ frequency: 5000, type: 'highpass' }], connectTo: 'target' }
+        ]
+      },
+      'Crash': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white', playbackRate: 0.4 },
+          envelope: { attack: 0.001, decay: 1.2, sustain: 0, release: 1 }
+        },
+        effects: [
+          { type: 'Filter', options: [{ frequency: 4000, type: 'highpass' }], connectTo: 'target' }
+        ]
+      },
+      'Tom Low': {
+        type: 'MembraneSynth',
+        options: {
+          pitchDecay: 0.1,
+          octaves: 4,
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 }
+        },
+        effects: []
+      },
+      'Tom High': {
+        type: 'MembraneSynth',
+        options: {
+          pitchDecay: 0.1,
+          octaves: 5,
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.1 }
+        },
+        effects: []
+      },
+       'Clap': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.05 }
+        },
+        effects: []
+      },
+    }
+  },
+  {
+    id: 'techno',
+    name: 'Techno Kit',
+    description: 'Deep, resonant kicks and sharp, metallic percussion.',
+    defaultBpm: 135,
+    defaultSwing: 0.05,
+    defaultFilterFreq: 18000,
+    defaultFilterQ: 1,
+    masterVolume: -7,
+    demoPattern: 'Four On The Floor',
+    velocityShapes: {
+      'Kick': [1.0],
+      'Snare': [1.0],
+      'Closed Hi-Hat': [1.0, 0.7],
+    },
+    drums: {
+      'Kick': {
+        type: 'MembraneSynth',
+        options: {
+          pitchDecay: 0.08,
+          octaves: 8,
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.2 }
+        },
+        effects: [
+          { type: 'Distortion', options: [{ distortion: 0.1 }], connectTo: 'target' }
+        ]
+      },
+      'Snare': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.01, decay: 0.18, sustain: 0, release: 0.1 }
+        },
+        effects: [
+          { type: 'Filter', options: [{ frequency: 2000, type: 'highpass' }], connectTo: 'target' }
+        ]
+      },
+      'Closed Hi-Hat': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.02 }
+        },
+        effects: [
+          { type: 'Filter', options: [{ frequency: 7000, type: 'highpass', Q: 1.5 }], connectTo: 'target' }
+        ]
+      },
+      'Open Hi-Hat': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.1 }
+        },
+        effects: [
+          { type: 'Filter', options: [{ frequency: 6000, type: 'highpass' }], connectTo: 'target' }
+        ]
+      },
+      'Tom Low': {
+        type: 'MembraneSynth',
+        options: {
+          pitchDecay: 0.08,
+          octaves: 3,
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 }
+        },
+        effects: []
+      },
+       'Tom High': {
+        type: 'MembraneSynth',
+        options: {
+          pitchDecay: 0.08,
+          octaves: 3,
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 }
+        },
+        effects: []
+      },
+       'Clap': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.01, decay: 0.18, sustain: 0, release: 0.1 }
+        },
+        effects: []
+      },
+       'Crash': {
+        type: 'NoiseSynth',
+        options: {
+          noise: { type: 'white' },
+          envelope: { attack: 0.01, decay: 0.18, sustain: 0, release: 0.1 }
+        },
+        effects: []
+      },
+    }
   }
 ];
 
