@@ -231,11 +231,11 @@ margin-top: 40px;
 }
 
 .bpm-control {
-  display: flex;
+  /* display: inline-flex; */
   align-items: center;
   gap: 10px;
   color: #e0e0e0;
-  font-weight: bold;
+  font-weight: none;
 }
 
 .bpm-control input[type="range"] {
