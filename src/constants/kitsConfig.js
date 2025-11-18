@@ -7,7 +7,7 @@
 export const KITS_CONFIG = [
   {
     id: 'classic',
-    name: 'Classic Kit',
+    name: 'Classic',
     description: 'Original BeatLab drums - classic electronic sounds',
     defaultBpm: 120,
     defaultSwing: 0,
@@ -91,7 +91,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'lofi-chill',
-    name: 'Lo-Fi Chill Kit',
+    name: 'Lo-Fi Chill',
     description: 'Soft kicks, vinyl noise, dusty snares with tape saturation',
     defaultBpm: 85,
     defaultSwing: 0.12,
@@ -282,7 +282,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'trap',
-    name: 'Trap Kit',
+    name: 'Trap',
     description: '808 subs, sharp hats, snappy snares',
     defaultBpm: 140,
     defaultSwing: 0.08,
@@ -473,7 +473,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'boom-bap-90s',
-    name: 'Boom Bap 90s Kit',
+    name: 'Boom Bap 90s',
     description: 'Crunchy drums, SP-1200 grit, classic hip-hop sound',
     defaultBpm: 95,
     defaultSwing: 0.18, // Classic 90s swing
@@ -689,7 +689,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'rock-acoustic',
-    name: 'Rock/Acoustic Kit',
+    name: 'Rock/Acoustic',
     description: 'Realistic multi-sampled sounds with natural decay and room ambience.',
     defaultBpm: 130,
     defaultSwing: 0,
@@ -789,7 +789,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'techno',
-    name: 'Techno Kit',
+    name: 'Techno',
     description: 'Deep, resonant kicks and sharp, metallic percussion.',
     defaultBpm: 135,
     defaultSwing: 0.05,
@@ -885,7 +885,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'edm-house',
-    name: 'EDM House Kit',
+    name: 'EDM House',
     description: 'Punchy kicks, white-noise snares, sharp hats for four-on-the-floor beats',
     defaultBpm: 128,
     defaultSwing: 0,
@@ -994,7 +994,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'funk',
-    name: 'Funk Kit',
+    name: 'Funk',
     description: 'Tight, dry drums with short decay and swing emphasis',
     defaultBpm: 110,
     defaultSwing: 0.16,
@@ -1103,7 +1103,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'latin-afrobeat',
-    name: 'Latin / Afrobeat Kit',
+    name: 'Latin / Afrobeat',
     description: 'Conga-like toms, shaker percussion with polyrhythmic feel',
     defaultBpm: 120,
     defaultSwing: 0.1,
@@ -1212,7 +1212,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'glitch',
-    name: 'Glitch Kit',
+    name: 'Glitch',
     description: 'Weird SFX, metallic glitches, bit-crushed experimental percussion',
     defaultBpm: 100,
     defaultSwing: 0.12,
@@ -1328,7 +1328,7 @@ export const KITS_CONFIG = [
   },
   {
     id: 'old-school-metal',
-    name: 'Old School Metal Kit',
+    name: 'Old School Metal',
     description: 'Tight, aggressive drums inspired by Metallica and Black Sabbath - vintage warmth with modern punch',
     defaultBpm: 160,
     defaultSwing: 0,
