@@ -163,10 +163,10 @@ export const adaptPatternToStepCount = (pattern, drumSounds, targetStepCount) =>
       adapted[sound.name] = [...sourcePattern];
     } else if (sourcePattern.length < targetStepCount) {
       // Repeat pattern to fill
-      adapted[sound.name] = [];
-      for (let i = 0; i < targetStepCount; i++) {
-        adapted[sound.name][i] = sourcePattern[i % sourcePattern.length] || false;
-      }
+      adapted[sound.name] = [
+        ...sourcePattern, 
+        ...Array(targetStepCount - sourcePattern.length).fill(false)
+      ];
     } else {
       // Truncate pattern
       adapted[sound.name] = sourcePattern.slice(0, targetStepCount);

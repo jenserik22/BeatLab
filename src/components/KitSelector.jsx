@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getAllKits } from '../constants/kitsConfig';
 
 const KitSelector = ({ currentKit, loadKit }) => {
   const kits = getAllKits();
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleKitChange = (kit) => {
     loadKit(kit);
@@ -15,10 +16,26 @@ const KitSelector = ({ currentKit, loadKit }) => {
     setIsOpen(!isOpen);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
     <div className="kit-selector">
       <h3>Drum kit: {currentKit.name}</h3>
-      <div className={`custom-dropdown ${isOpen ? 'show' : ''}`}>
+      <div className={`custom-dropdown ${isOpen ? 'show' : ''}`} ref={dropdownRef}>
         <div 
           className="custom-dropdown-toggle"
           onClick={toggleDropdown}
