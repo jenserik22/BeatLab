@@ -70,7 +70,6 @@ const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handleP
     <div className="transport-controls">
       <button onClick={handlePlay} disabled={isPlaying}>Play</button>
       <button onClick={handleStop} disabled={!isPlaying}>Stop</button>
-      <button onClick={toggleLoop} className={isLooping ? 'active' : ''}>Loop</button>
       <button onClick={handleShare}>Share</button>
       <AudioExporter 
         drumSounds={drumSounds}
