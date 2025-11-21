@@ -152,9 +152,6 @@ export const adaptPatternToStepCount = (pattern, drumSounds, targetStepCount) =>
   }
 
   const adapted = {};
-  // Get source step count from first valid pattern
-  const firstSound = drumSounds.find(sound => Array.isArray(pattern[sound.name]));
-  const sourceStepCount = firstSound ? pattern[firstSound.name].length : targetStepCount;
 
   drumSounds.forEach(sound => {
     const sourcePattern = pattern[sound.name] || [];

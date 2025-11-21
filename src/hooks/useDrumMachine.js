@@ -374,7 +374,7 @@ export const useDrumMachine = (drumSounds) => {
 
     setCurrentKit(kit);
     debugLog('Kit loaded:', kit.name);
-  }, [drumSounds, stepCount, filter, handleStop]);
+  }, [drumSounds, stepCount, filter, handleStop, rebuildSequencer]);
 
   const loadPattern = useCallback((patternName, patternData) => {
     if (patternData.pattern) { // Check for new format

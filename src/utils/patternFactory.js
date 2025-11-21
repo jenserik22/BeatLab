@@ -251,7 +251,7 @@ export const getPredefinedPatterns = (drumSounds, stepCount = DEFAULTS.STEP_COUN
   return generateAllPatterns(drumSounds, stepCount);
 };
 
-export default {
+const patternFactory = {
   PATTERN_TEMPLATES,
   generatePattern,
   generateAllPatterns,
@@ -260,3 +260,5 @@ export default {
   getPredefinedPatterns,
   getPatternNames,
 };
+
+export default patternFactory;
