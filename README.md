@@ -5,11 +5,12 @@ BeatLab is a browser-based drum machine and step sequencer built with React and 
 ## Key Features
 
 *   **Adjustable Step Sequencer (8–32):** Program patterns with non-destructive step changes (increasing adds blank steps; decreasing truncates only the end).
-*   **8 Drum Sounds:** Includes Kick, Snare, Closed Hi-Hat, Open Hi-Hat, Clap, Crash, Tom Low, and Tom High.
-*   **Playback Controls:** Play, stop, BPM control, and loop toggle.
+*   **Core Drum Sounds:** Includes Kick, Snare, Closed Hi-Hat, Open Hi-Hat, Clap, Crash, Tom Low, and Tom High, provided by the selected drumkit.
+*   **Multiple Drumkits:** Switch between different drum kits, each with its unique set of sounds.
+*   **Playback Controls:** Play, stop, BPM control.
 *   **Pattern Management:** Load predefined patterns (auto-adapt to current step count), save your own patterns to local storage, and delete them. Saved data is backward-compatible with earlier versions.
 *   **Mixer:** Adjust the volume of each individual drum sound and the master volume.
-*   **Global Filter:** A low-pass filter with frequency and resonance controls that affects the entire mix.
+*   **Global Filter:** A low-pass filter with frequency,resonance controls and swing time that affects the entire mix.
 *   **Background Loops:** Six different background loops with individual play/stop and volume controls.
 *   **Audio Visualizer:** A real-time spectrum analyzer that visualizes the master audio output.
 
