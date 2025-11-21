@@ -160,9 +160,31 @@ function App() {
         <div className="app-container">
           <div className="middle-column">
             <Transport 
-            {...drumMachine} 
+            isPlaying={drumMachine.isPlaying}
+            isLooping={drumMachine.isLooping}
+            bpm={drumMachine.bpm}
+            stepCount={drumMachine.stepCount}
+            masterVolume={drumMachine.masterVolume}
+            handlePlay={drumMachine.handlePlay}
+            handleStop={drumMachine.handleStop}
+            toggleLoop={drumMachine.toggleLoop}
+            handleBpmChange={drumMachine.handleBpmChange}
+            handleStepCountChange={drumMachine.handleStepCountChange}
+            handleMasterVolumeChange={drumMachine.handleMasterVolumeChange}
+            getSharablePatternUrl={drumMachine.getSharablePatternUrl}
             drumSounds={drumSounds}
             pattern={drumMachine.pattern}
+            drumVolumes={drumMachine.drumVolumes}
+            filterFreq={drumMachine.filterFreq}
+            filterQ={drumMachine.filterQ}
+            loopPlaying={drumMachine.loopPlaying}
+            loopVolume={drumMachine.loopVolume}
+            loop1={drumMachine.loop1}
+            loop2={drumMachine.loop2}
+            loop3={drumMachine.loop3}
+            loop4={drumMachine.loop4}
+            loop5={drumMachine.loop5}
+            loop6={drumMachine.loop6}
           />
             <KitSelector currentKit={drumMachine.currentKit} loadKit={drumMachine.loadKit} />
             <Patterns {...drumMachine} predefinedPatterns={drumMachine.predefinedPatterns} />
@@ -170,7 +192,12 @@ function App() {
             <Visualizer {...drumMachine} />
           </div>
           <div className="right-column">
-            <Mixer {...drumMachine} drumSounds={drumSounds} />
+            <Mixer 
+            {...drumMachine} 
+            drumSounds={drumSounds}
+            swing={drumMachine.swing}
+            handleSwingChange={drumMachine.handleSwingChange}
+            />
           </div>
         </div>
       )}

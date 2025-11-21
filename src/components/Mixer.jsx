@@ -14,6 +14,8 @@ const Mixer = ({
   handleFilterQChange,
   toggleLoopAt,
   handleLoopVolumeChangeAt,
+  swing,
+  handleSwingChange,
 }) => {
   return (
     <div className="mixer-controls">
@@ -68,6 +70,19 @@ const Mixer = ({
               onChange={handleFilterQChange}
             />
             <span>{filterQ}</span>
+          </div>
+          <div className="mix-control">
+            <label htmlFor="swing">Swing</label>
+            <input
+              type="range"
+              id="swing"
+              min="0"
+              max="0.5"
+              step="0.01"
+              value={swing}
+              onChange={handleSwingChange}
+            />
+            <span>{Math.round(swing * 100)}%</span>
           </div>
         </div>
       </div>
