@@ -229,7 +229,7 @@ export const createBuiltinLoops = (targetNode, registerEffect = () => {}) => {
   return createLoops(LOOP_CONFIGS, targetNode, registerEffect);
 };
 
-export default {
+const LoopFactory = {
   createLoopSynth,
   createEffectsChain,
   createLoopPattern,
@@ -237,3 +237,5 @@ export default {
   createLoops,
   createBuiltinLoops
 };
+
+export default LoopFactory;

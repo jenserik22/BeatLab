@@ -1,12 +1,15 @@
-# Todo
+- [x] Fix `useCallback` dependency warning in `useDrumMachine.js`
+- [x] Fix anonymous default export warning in `loopFactory.js`
+- [x] Run `npm run build` to verify fixes
 
-- [X] Move the Swing control UI from `Transport.jsx` to `Mixer.jsx`.
-- [X] Update the props in `App.js` to pass `swing` and `handleSwingChange` to `Mixer.jsx` instead of `Transport.jsx`.
-- [X] Adjust the CSS in `App.css` for the moved swing control.
-- [X] Review changes and ensure everything works as expected.
+## Review
 
-# Review
+**1. `useCallback` dependency warning in `useDrumMachine.js`:**
+   - **Change:** Removed `drumSounds` and `stepCount` from the dependency array of the `loadKit` `useCallback` hook on line 377.
+   - **Reasoning:** These dependencies were redundant as `loadKit` transitively depended on them through the `rebuildSequencer` function, which was already in its dependency array. This change aligns with the `react-hooks/exhaustive-deps` linting rule.
 
-- Moved the "Swing" control from the `Transport` component to the `Mixer` component, under the "Global Filter" section.
-- Updated `App.js` to pass the `swing` and `handleSwingChange` props to the `Mixer` component.
-- Removed the specific CSS for the swing control and updated the JSX in `Mixer.jsx` to match the styling of the other controls in the mixer.
+**2. Anonymous default export warning in `loopFactory.js`:**
+   - **Change:** Refactored the default export in `src/utils/loopFactory.js`. The exported object is now assigned to a named constant `LoopFactory` before being exported as default.
+   - **Reasoning:** This addresses the `import/no-anonymous-default-export` linting warning by providing a named export, improving code readability and maintainability.
+
+Both changes were verified by running `npm run build`, which completed successfully with no warnings.
