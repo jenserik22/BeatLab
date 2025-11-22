@@ -6,7 +6,7 @@ import {
   getSavedPatterns,
   setSavedPatterns,
 } from '../utils/storage';
-import { DEFAULTS, LOOPS_CONFIG } from '../constants/config';
+import { DEFAULTS, LOOPS_CONFIG, USER_LOOP_CONFIG } from '../constants/config';
 import {
   generateAllPatterns,
 } from '../utils/patternFactory';
@@ -17,7 +17,7 @@ import {
   buildPatternData,
   adaptPatternToStepCount as adaptPattern,
 } from '../utils/patternBuilder';
-import { createBuiltinLoops } from '../utils/loopFactory';
+import { createBuiltinLoops, createUserLoop } from '../utils/loopFactory';
 import { createKitSynths, disposeKitSynths, getVelocityForStep } from '../utils/kitFactory';
 import { getDefaultKit } from '../constants/kitsConfig';
 
@@ -69,6 +69,9 @@ export const useDrumMachine = (drumSounds) => {
   const [savedPatterns, setSavedPatternsState] = useState(() => getSavedPatterns(drumSounds));
   const [currentKit, setCurrentKit] = useState(getDefaultKit());
   const [swing, setSwing] = useState(0);
+  
+  // User uploaded loops - dynamic array
+  const [userLoops, setUserLoops] = useState([]);
 
   // Refs for Tone.js instruments
   const synths = useRef({});
@@ -97,6 +100,10 @@ export const useDrumMachine = (drumSounds) => {
   
   const loopSynths = useRef([]);
   const loops = useRef([]);
+  
+  // User loop refs - stored in maps for dynamic access
+  const userLoopPlayers = useRef({});
+  const userLoopControls = useRef({});
 
   const [filterFreq, setFilterFreq] = useState(DEFAULTS.FILTER_FREQ);
   const [filterQ, setFilterQ] = useState(DEFAULTS.FILTER_Q);
@@ -236,6 +243,27 @@ export const useDrumMachine = (drumSounds) => {
       masterVol.current = null;
       filter.current = null;
 
+      // Revoke all blob URLs for user loops and cleanup
+      Object.values(userLoopPlayers.current).forEach(player => {
+        if (player?.current) {
+          player.current.dispose();
+        }
+      });
+      Object.values(userLoopControls.current).forEach(control => {
+        if (control?.current && typeof control.current.dispose === 'function') {
+          control.current.dispose();
+        }
+      });
+      userLoopPlayers.current = {};
+      userLoopControls.current = {};
+      
+      // Revoke blob URLs for all user loops
+      userLoops.forEach(loop => {
+        if (loop.url) {
+          URL.revokeObjectURL(loop.url);
+        }
+      });
+
       debugLog('Disposal complete.');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -294,6 +322,13 @@ export const useDrumMachine = (drumSounds) => {
           loopRef.current.start(0);
         }
       });
+      // Start playing user loops that are enabled
+      Object.entries(userLoopControls.current).forEach(([loopId, control]) => {
+        const loop = userLoops.find(l => l.id === loopId);
+        if (control?.current && loop?.playing) {
+          control.current.start(0);
+        }
+      });
       setIsPlaying(true);
       debugLog('Transport started.');
     }
@@ -305,6 +340,12 @@ export const useDrumMachine = (drumSounds) => {
     loops.current.forEach(loopRef => {
       if (loopRef?.current) {
         loopRef.current.stop(0);
+      }
+    });
+    // Stop all user loops
+    Object.values(userLoopControls.current).forEach(control => {
+      if (control?.current) {
+        control.current.stop(0);
       }
     });
     setIsPlaying(false);
@@ -502,6 +543,44 @@ export const useDrumMachine = (drumSounds) => {
     });
   }, [loopVolume]);
 
+  // Create/destroy user loop players when loops change
+  useEffect(() => {
+    // Create players for new loops with URLs
+    userLoops.forEach(loop => {
+      if (loop.url && !userLoopPlayers.current[loop.id]) {
+        // Create the player
+        const { playerRef, controlRef } = createUserLoop(loop.url, masterVol.current);
+        userLoopPlayers.current[loop.id] = playerRef;
+        userLoopControls.current[loop.id] = controlRef;
+      } else if (!loop.url && userLoopPlayers.current[loop.id]) {
+        // Clean up if URL was removed
+        if (userLoopPlayers.current[loop.id]?.current) {
+          userLoopPlayers.current[loop.id].current.dispose();
+        }
+        delete userLoopPlayers.current[loop.id];
+        delete userLoopControls.current[loop.id];
+      }
+    });
+    
+    // Set volumes for all user loops
+    Object.keys(userLoopPlayers.current).forEach(loopId => {
+      const loop = userLoops.find(l => l.id === loopId);
+      if (loop && userLoopPlayers.current[loopId]?.current) {
+        userLoopPlayers.current[loopId].current.volume.value = loop.volume;
+      }
+    });
+  }, [userLoops, masterVol]);
+
+  // Handle user loop mute state
+  useEffect(() => {
+    Object.entries(userLoopControls.current).forEach(([loopId, control]) => {
+      const loop = userLoops.find(l => l.id === loopId);
+      if (control?.current) {
+        control.current.mute = !loop?.playing;
+      }
+    });
+  }, [userLoops]);
+
   const toggleLoopAt = (index) => {
     setLoopPlaying(prev => {
       const next = [...prev];
@@ -517,6 +596,97 @@ export const useDrumMachine = (drumSounds) => {
       next[index] = val;
       return next;
     });
+  };
+
+  // User loop handlers
+  const addUserLoop = () => {
+    if (userLoops.length >= USER_LOOP_CONFIG.MAX_USER_LOOPS) {
+      alert('Maximum number of user loops reached');
+      return;
+    }
+    
+    const newLoop = {
+      id: `user_${Date.now()}`,
+      url: null,
+      playing: false,
+      volume: DEFAULTS.VOLUME_DB
+    };
+    
+    setUserLoops(prev => [...prev, newLoop]);
+  };
+
+  const handleUserLoopFileUpload = (loopId, file) => {
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('audio/')) {
+      alert('Please select a valid audio file.');
+      return;
+    }
+    
+    // Validate file size (limit to 20MB)
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (file.size > maxSize) {
+      alert('File size must be less than 20MB.');
+      return;
+    }
+    
+    // Find the loop and revoke old URL if exists
+    const loopIndex = userLoops.findIndex(l => l.id === loopId);
+    if (loopIndex === -1) return;
+    
+    if (userLoops[loopIndex].url) {
+      URL.revokeObjectURL(userLoops[loopIndex].url);
+    }
+    
+    // Create new blob URL
+    const blobUrl = URL.createObjectURL(file);
+    
+    // Update state
+    setUserLoops(prev => prev.map(loop => 
+      loop.id === loopId ? { ...loop, url: blobUrl } : loop
+    ));
+  };
+
+  const handleClearUserLoop = (loopId) => {
+    // Find the loop
+    const loopIndex = userLoops.findIndex(l => l.id === loopId);
+    if (loopIndex === -1) return;
+    
+    // Revoke blob URL if it exists
+    if (userLoops[loopIndex].url) {
+      URL.revokeObjectURL(userLoops[loopIndex].url);
+    }
+    
+    // Clear the uploaded URL for this loop
+    setUserLoops(prev => prev.map(loop => 
+      loop.id === loopId ? { ...loop, url: null, playing: false } : loop
+    ));
+  };
+
+  const toggleUserLoop = (loopId) => {
+    setUserLoops(prev => {
+      const updatedLoops = prev.map(loop => 
+        loop.id === loopId ? { ...loop, playing: !loop.playing } : loop
+      );
+      
+      // Start playing immediately if transport is already running
+      const toggledLoop = updatedLoops.find(l => l.id === loopId);
+      if (toggledLoop?.playing && Tone.Transport.state === 'started') {
+        const control = userLoopControls.current[loopId];
+        if (control?.current) {
+          control.current.start(0);
+        }
+      }
+      
+      return updatedLoops;
+    });
+  };
+
+  const handleUserLoopVolumeChange = (loopId, value) => {
+    setUserLoops(prev => prev.map(loop => 
+      loop.id === loopId ? { ...loop, volume: parseFloat(value) } : loop
+    ));
   };
 
   const handleFilterFreqChange = (e) => {
@@ -636,6 +806,11 @@ export const useDrumMachine = (drumSounds) => {
     handleFilterQChange,
     toggleLoopAt,
     handleLoopVolumeChangeAt,
+    addUserLoop,
+    handleUserLoopFileUpload,
+    handleClearUserLoop,
+    toggleUserLoop,
+    handleUserLoopVolumeChange,
     playSound,
     predefinedPatterns: generateAllPatterns(drumSounds, stepCount),
     analyser: analyserRef.current,
@@ -647,5 +822,7 @@ export const useDrumMachine = (drumSounds) => {
     loop4: loops.current[3]?.current || null,
     loop5: loops.current[4]?.current || null,
     loop6: loops.current[5]?.current || null,
+    // Export user loop state
+    userLoops,
   };
 };

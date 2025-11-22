@@ -1,6 +1,7 @@
 import React from 'react';
-import { LOOPS_CONFIG, DEFAULTS } from '../constants/config';
+import { LOOPS_CONFIG, DEFAULTS, USER_LOOP_CONFIG } from '../constants/config';
 import { dbToPercent, percentToDb } from '../utils/volume';
+import LoopControl from './LoopControl';
 
 const Mixer = ({
   drumSounds,
@@ -14,6 +15,13 @@ const Mixer = ({
   handleFilterQChange,
   toggleLoopAt,
   handleLoopVolumeChangeAt,
+  // User loop props
+  userLoops,
+  addUserLoop,
+  handleUserLoopFileUpload,
+  handleClearUserLoop,
+  toggleUserLoop,
+  handleUserLoopVolumeChange,
   swing,
   handleSwingChange,
 }) => {
@@ -86,30 +94,73 @@ const Mixer = ({
           </div>
         </div>
       </div>
+      
+      {/* Predefined loops */}
       <div className="background-loops">
         <h3>Background Loops</h3>
         {LOOPS_CONFIG.map((loop, i) => (
+          <LoopControl
+            key={loop.id}
+            label={loop.label}
+            playing={loopPlaying?.[i]}
+            volume={loopVolume?.[i] ?? DEFAULTS.VOLUME_DB}
+            onToggle={() => toggleLoopAt(i)}
+            onVolumeChange={(value) => handleLoopVolumeChangeAt(i, { target: { value } })}
+          />
+        ))}
+      </div>
+      
+      {/* User loops */}
+      <div className="user-loops-section">
+        <h3>Your Loops</h3>
+        {userLoops.map((loop, i) => (
           <div key={loop.id} className="loop-control">
-            <button onClick={() => toggleLoopAt(i)} className={loopPlaying?.[i] ? 'active' : ''}>
-              {loop.label}
-            </button>
-            <div className="volume-control">
-              <label htmlFor={`${loop.id}-volume`}>Volume: {dbToPercent(loopVolume?.[i] ?? DEFAULTS.VOLUME_DB)}%</label>
-              <input
-                type="range"
-                id={`${loop.id}-volume`}
-                min={0}
-                max={100}
-                step="1"
-                value={dbToPercent(loopVolume?.[i] ?? DEFAULTS.VOLUME_DB)}
-                onChange={(e) => {
-                  const db = percentToDb(parseFloat(e.target.value), DEFAULTS.VOLUME_MIN, DEFAULTS.VOLUME_MAX);
-                  handleLoopVolumeChangeAt(i, { target: { value: db } });
-                }}
-              />
-            </div>
+            {!loop.url ? (
+              <div className="file-input-wrapper">
+                <input
+                  type="file"
+                  id={`${loop.id}-upload`}
+                  accept="audio/wav,audio/*"
+                  onChange={(e) => handleUserLoopFileUpload(loop.id, e.target.files[0])}
+                  style={{ display: 'none' }}
+                />
+                <button 
+                  onClick={() => document.getElementById(`${loop.id}-upload`).click()}
+                  className="file-upload-btn"
+                >
+                  Upload WAV
+                </button>
+              </div>
+            ) : (
+              <LoopControl
+                label={`User Loop ${i + 1}`}
+                playing={loop.playing}
+                volume={loop.volume}
+                hasUrl={!!loop.url}
+                isUserLoop={true}
+                onToggle={() => toggleUserLoop(loop.id)}
+                onVolumeChange={(value) => handleUserLoopVolumeChange(loop.id, value)}
+                onClear={() => handleClearUserLoop(loop.id)}
+              >
+                <button 
+                  onClick={() => handleClearUserLoop(loop.id)}
+                  className="clear-file-btn"
+                >
+                  Clear
+                </button>
+              </LoopControl>
+            )}
           </div>
         ))}
+        
+        {userLoops.length < USER_LOOP_CONFIG.MAX_USER_LOOPS && (
+          <button 
+            onClick={addUserLoop}
+            className="add-loop-btn"
+          >
+            + Add Loop
+          </button>
+        )}
       </div>
     </div>
   );

@@ -35,6 +35,26 @@ export const createLoopSynth = (synthConfig) => {
 };
 
 /**
+ * Creates a Tone.Player for user-uploaded audio files
+ * @param {string} userLoopUrl - Blob URL for user-uploaded audio file
+ * @returns {Object} Created Tone.Player instance
+ */
+export const createLoopPlayer = (userLoopUrl) => {
+  if (!userLoopUrl) {
+    throw new Error('User loop URL is required for player creation');
+  }
+  
+  // Create player with looping enabled
+  const player = new Tone.Player({
+    url: userLoopUrl,
+    autostart: false,
+    loop: true
+  });
+  
+  return player;
+};
+
+/**
  * Creates and connects effects chain
  * @param {Array} effects - Array of effect configurations
  * @param {Object} targetNode - Final target node to connect to
@@ -102,6 +122,32 @@ export const createEffectsChain = (effects, targetNode) => {
 };
 
 /**
+ * Creates a user loop with Tone.Player and control interface
+ * @param {string} userLoopUrl - Blob URL for user-uploaded audio file
+ * @param {Object} targetNode - Target node to connect output to
+ * @returns {Object} Object containing playerRef and controlRef
+ */
+export const createUserLoop = (userLoopUrl, targetNode) => {
+  const player = createLoopPlayer(userLoopUrl);
+  
+  // Connect player to target
+  player.connect(targetNode);
+  
+  // Create control interface compatible with existing loop system
+  const control = {
+    start: (time) => player.start(time),
+    stop: (time) => player.stop(time),
+    dispose: () => player.dispose(),
+    mute: false
+  };
+  
+  return {
+    playerRef: { current: player },
+    controlRef: { current: control }
+  };
+};
+
+/**
  * Creates a Tone.Part for a loop based on pattern configuration
  * @param {Object} patternConfig - Pattern configuration
  * @param {Object} synth - Synth instance to trigger
@@ -143,13 +189,14 @@ export const createLoopPattern = (patternConfig, synth) => {
 };
 
 /**
- * Creates a complete loop (synth, effects, pattern)
+ * Creates a complete loop (synth or player, effects, pattern)
  * @param {Object} loopConfig - Loop configuration from LOOP_CONFIGS
  * @param {Object} targetNode - Target node to connect output to
  * @param {Function} registerEffect - Callback to register effect nodes for cleanup
+ * @param {string} userLoopUrl - Optional blob URL for user-uploaded WAV file
  * @returns {Object} Object containing synthRef and loopRef
  */
-export const createLoop = (loopConfig, targetNode, registerEffect = () => {}) => {
+export const createLoop = (loopConfig, targetNode, registerEffect = () => {}, userLoopUrl = null) => {
   if (!loopConfig) {
     throw new Error('Loop configuration is required');
   }
@@ -157,8 +204,14 @@ export const createLoop = (loopConfig, targetNode, registerEffect = () => {}) =>
   const { id, synthConfig, effects, pattern } = loopConfig;
   
   try {
-    // Create synth
-    const synth = createLoopSynth(synthConfig);
+    let synth;
+    
+    // Create either a Tone.Player for uploaded files or a synth for default loops
+    if (userLoopUrl) {
+      synth = createLoopPlayer(userLoopUrl);
+    } else {
+      synth = createLoopSynth(synthConfig);
+    }
     
     // Create effects chain
     let finalNode;
@@ -173,13 +226,28 @@ export const createLoop = (loopConfig, targetNode, registerEffect = () => {}) =>
       finalNode = targetNode;
     }
     
-    // Connect synth to effects chain
+    // Connect synth/player to effects chain
     if (synth && finalNode) {
       synth.connect(finalNode);
     }
     
-    // Create pattern
-    const loopPart = createLoopPattern(pattern, synth);
+    // For Tone.Player, we need a different looping approach since it handles looping internally
+    let loopPart;
+    if (userLoopUrl) {
+      // Tone.Player handles looping internally and has its own start/stop methods
+      // Create a compatible interface for controlling playback
+      loopPart = {
+        start: (time) => synth.start(time),
+        stop: (time) => synth.stop(time),
+        dispose: () => synth.dispose(),
+        mute: false,
+        loop: true,
+        loopEnd: pattern.loopEnd || "2m"
+      };
+    } else {
+      // Create pattern for synth-based loops
+      loopPart = createLoopPattern(pattern, synth);
+    }
     
     return {
       synthRef: { current: synth },
@@ -200,14 +268,16 @@ export const createLoop = (loopConfig, targetNode, registerEffect = () => {}) =>
  * @param {Array} loopConfigs - Array of loop configurations
  * @param {Object} targetNode - Target node to connect output to
  * @param {Function} registerEffect - Callback to register effect nodes
+ * @param {Array} userLoopUrls - Optional array of blob URLs for user-uploaded files
  * @returns {Object} Object with arrays of synthRefs and loopRefs
  */
-export const createLoops = (loopConfigs, targetNode, registerEffect = () => {}) => {
+export const createLoops = (loopConfigs, targetNode, registerEffect = () => {}, userLoopUrls = []) => {
   const synthRefs = [];
   const loopRefs = [];
   
   loopConfigs.forEach((config, index) => {
-    const { synthRef, loopRef } = createLoop(config, targetNode, registerEffect);
+    const userLoopUrl = userLoopUrls[index] || null;
+    const { synthRef, loopRef } = createLoop(config, targetNode, registerEffect, userLoopUrl);
     synthRefs[index] = synthRef;
     loopRefs[index] = loopRef;
   });
@@ -223,10 +293,11 @@ export const createLoops = (loopConfigs, targetNode, registerEffect = () => {}) 
  * Creates the built-in loops (loop1 through loop6)
  * @param {Object} targetNode - Target node to connect output to
  * @param {Function} registerEffect - Callback to register effect nodes
+ * @param {Array} userLoopUrls - Optional array of blob URLs for user-uploaded files
  * @returns {Object} Object with synthRefs and loopRefs for loops 1-6
  */
-export const createBuiltinLoops = (targetNode, registerEffect = () => {}) => {
-  return createLoops(LOOP_CONFIGS, targetNode, registerEffect);
+export const createBuiltinLoops = (targetNode, registerEffect = () => {}, userLoopUrls = []) => {
+  return createLoops(LOOP_CONFIGS, targetNode, registerEffect, userLoopUrls);
 };
 
 const LoopFactory = {
@@ -235,7 +306,9 @@ const LoopFactory = {
   createLoopPattern,
   createLoop,
   createLoops,
-  createBuiltinLoops
+  createBuiltinLoops,
+  createLoopPlayer,
+  createUserLoop
 };
 
 export default LoopFactory;

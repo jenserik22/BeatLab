@@ -476,6 +476,70 @@ margin-top: 40px;
   width: 100%;
 }
 
+/* New styles for loop upload controls */
+.loop-upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.file-upload-btn {
+  background-color: #00ffff;
+  color: #1a1a2e;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.85em;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+  white-space: nowrap;
+}
+
+.file-upload-btn:hover {
+  background-color: #00e6e6;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.uploaded-file-name {
+  color: #e0e0e0;
+  font-size: 0.8em;
+  font-weight: normal;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clear-file-btn {
+  background-color: #ff5555;
+  color: #1a1a2e;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.85em;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 8px rgba(255, 85, 85, 0.4);
+}
+
+.clear-file-btn:hover {
+  background-color: #ff4444;
+  box-shadow: 0 0 12px rgba(255, 85, 85, 0.6);
+  transform: translateY(-1px);
+}
+
 .visualizer-card {
   padding: 15px;
   background-color: #2a2a4a;
@@ -935,4 +999,46 @@ select:focus {
   outline: none;
   border-color: #00ffff;
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* User Loops Section */
+.user-loops-section {
+  padding: 1px 15px 15px;
+  background-color: #2a2a4a;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+  width: 90%;
+  max-width: 800px;
+  margin-top: 20px;
+}
+
+.user-loops-section h3 {
+  color: #00ffff;
+  margin-bottom: 15px;
+}
+
+.add-loop-btn {
+  background-color: #00ffff;
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+  margin-top: 15px;
+  width: 100%;
+}
+
+.add-loop-btn:hover {
+  background-color: #00e6e6;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.add-loop-btn:active {
+  background-color: #00b3b3;
+  transform: translateY(0);
 }

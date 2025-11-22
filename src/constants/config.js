@@ -16,3 +16,7 @@ export const LOOPS_CONFIG = [
   { id: 'loop5', label: 'Pluck Synth' },
   { id: 'loop6', label: 'Glitchy Perc' },
 ];
+
+export const USER_LOOP_CONFIG = {
+  MAX_USER_LOOPS: 8,
+};

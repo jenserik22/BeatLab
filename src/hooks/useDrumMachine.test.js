@@ -103,4 +103,143 @@ describe('useDrumMachine', () => {
     expect(result.current.swing).toBe(testKit.defaultSwing);
     expect(result.current.currentKit.id).toBe('test-kit');
   });
+
+  // User loop tests
+  describe('user loops', () => {
+    it('should initialize with empty userLoops array', () => {
+      const { result } = renderHook(() => useDrumMachine(mockDrumSounds));
+      
+      expect(result.current.userLoops).toBeDefined();
+      expect(Array.isArray(result.current.userLoops)).toBe(true);
+      expect(result.current.userLoops).toHaveLength(0);
+    });
+
+    it('should add user loop when addUserLoop is called', () => {
+      const { result } = renderHook(() => useDrumMachine(mockDrumSounds));
+      
+      act(() => {
+        result.current.addUserLoop();
+      });
+      
+      expect(result.current.userLoops).toHaveLength(1);
+      expect(result.current.userLoops[0]).toHaveProperty('id');
+      expect(result.current.userLoops[0]).toHaveProperty('url');
+      expect(result.current.userLoops[0]).toHaveProperty('playing');
+      expect(result.current.userLoops[0]).toHaveProperty('volume');
+      expect(result.current.userLoops[0].url).toBeNull();
+      expect(result.current.userLoops[0].playing).toBe(false);
+    });
+
+    it('should handle user loop file upload', () => {
+      const { result } = renderHook(() => useDrumMachine(mockDrumSounds));
+      
+      // First add a loop
+      act(() => {
+        result.current.addUserLoop();
+      });
+      
+      const loopId = result.current.userLoops[0].id;
+      
+      // Mock file
+      const mockFile = new File(['wav-data'], 'test.wav', { type: 'audio/wav' });
+      
+      act(() => {
+        result.current.handleUserLoopFileUpload(loopId, mockFile);
+      });
+      
+      expect(result.current.userLoops[0].url).toBeTruthy();
+      expect(result.current.userLoops[0].url).toContain('blob:');
+    });
+
+    it('should toggle user loop playing state', () => {
+      const { result } = renderHook(() => useDrumMachine(mockDrumSounds));
+      
+      act(() => {
+        result.current.addUserLoop();
+      });
+      
+      const loopId = result.current.userLoops[0].id;
+      
+      // Initially not playing
+      expect(result.current.userLoops[0].playing).toBe(false);
+      
+      act(() => {
+        result.current.toggleUserLoop(loopId);
+      });
+      
+      // Should be playing
+      expect(result.current.userLoops[0].playing).toBe(true);
+      
+      act(() => {
+        result.current.toggleUserLoop(loopId);
+      });
+      
+      // Should not be playing
+      expect(result.current.userLoops[0].playing).toBe(false);
+    });
+
+    it('should handle user loop volume change', () => {
+      const { result } = renderHook(() => useDrumMachine(mockDrumSounds));
+      
+      act(() => {
+        result.current.addUserLoop();
+      });
+      
+      const loopId = result.current.userLoops[0].id;
+      const newVolume = -5;
+      
+      act(() => {
+        result.current.handleUserLoopVolumeChange(loopId, newVolume);
+      });
+      
+      expect(result.current.userLoops[0].volume).toBe(newVolume);
+    });
+
+    it('should clear user loop file upload', () => {
+      const { result } = renderHook(() => useDrumMachine(mockDrumSounds));
+      
+      act(() => {
+        result.current.addUserLoop();
+      });
+      
+      const loopId = result.current.userLoops[0].id;
+      const mockFile = new File(['wav-data'], 'test.wav', { type: 'audio/wav' });
+      
+      // Upload file
+      act(() => {
+        result.current.handleUserLoopFileUpload(loopId, mockFile);
+      });
+      
+      const uploadedUrl = result.current.userLoops[0].url;
+      expect(uploadedUrl).toBeTruthy();
+      
+      // Clear it
+      act(() => {
+        result.current.handleClearUserLoop(loopId);
+      });
+      
+      expect(result.current.userLoops[0].url).toBeNull();
+    });
+
+    it('should enforce MAX_USER_LOOPS limit', () => {
+      const { result } = renderHook(() => useDrumMachine(mockDrumSounds));
+      
+      // Add loops up to limit
+      for (let i = 0; i < 8; i++) {
+        act(() => {
+          result.current.addUserLoop();
+        });
+      }
+      
+      expect(result.current.userLoops).toHaveLength(8);
+      
+      // Try to add one more
+      act(() => {
+        result.current.addUserLoop();
+      });
+      
+      // Should still be 8
+      expect(result.current.userLoops).toHaveLength(8);
+    });
+  });
 });

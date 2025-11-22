@@ -4,20 +4,24 @@ import {
   createLoopPattern, 
   createLoop,
   createLoops,
-  createBuiltinLoops
+  createBuiltinLoops,
+  createLoopPlayer,
+  createUserLoop
 } from './loopFactory';
 import * as Tone from 'tone';
 
 // Mock Tone.js - fixed versions that return proper instances
 const createMockNode = () => ({
   connect: jest.fn(),
-  dispose: jest.fn()
+  dispose: jest.fn(),
+  volume: { value: 0 }
 });
 
 const createMockStartNode = () => ({
   connect: jest.fn(),
   start: jest.fn(),
-  dispose: jest.fn()
+  dispose: jest.fn(),
+  volume: { value: 0 }
 });
 
 jest.mock('tone', () => {
@@ -55,6 +59,18 @@ jest.mock('tone', () => {
     triggerAttackRelease: jest.fn()
   }));
   
+  // Player for user-uploaded loops
+  Tone.Player = jest.fn(() => ({
+    ...createMockStartNode(),
+    start: jest.fn(),
+    stop: jest.fn(),
+    connect: jest.fn(),
+    dispose: jest.fn(),
+    loop: false,
+    autostart: false,
+    volume: { value: 0 }
+  }));
+  
   // Effects
   Tone.Chorus = jest.fn(() => ({
     ...createMockStartNode(),
@@ -79,6 +95,18 @@ jest.mock('tone', () => {
   
   Tone.BitCrusher = jest.fn(() => ({
     ...createMockNode()
+  }));
+  
+  // Player for user-uploaded loops
+  Tone.Player = jest.fn(() => ({
+    ...createMockStartNode(),
+    start: jest.fn(),
+    stop: jest.fn(),
+    connect: jest.fn(),
+    dispose: jest.fn(),
+    loop: false,
+    autostart: false,
+    volume: { value: 0 }
   }));
   
   // Pattern
@@ -440,6 +468,64 @@ describe('loopFactory', () => {
       expect(Tone.PolySynth).toHaveBeenCalled(); // loop4
       expect(Tone.PluckSynth).toHaveBeenCalled(); // loop5
       expect(Tone.NoiseSynth).toHaveBeenCalled(); // loop6
+    });
+  });
+
+  describe('createLoopPlayer', () => {
+    it('should create Tone.Player with correct config', () => {
+      const testUrl = 'blob://test.wav';
+      
+      const player = createLoopPlayer(testUrl);
+      
+      expect(Tone.Player).toHaveBeenCalledWith({
+        url: testUrl,
+        autostart: false,
+        loop: true
+      });
+      expect(player).toBeDefined();
+    });
+
+    it('should throw error if no URL provided', () => {
+      expect(() => createLoopPlayer(null)).toThrow('User loop URL is required for player creation');
+      expect(() => createLoopPlayer('')).toThrow('User loop URL is required for player creation');
+    });
+  });
+
+  describe('createUserLoop', () => {
+    const mockTargetNode = { connect: jest.fn() };
+    
+    it('should create user loop with player and control interface', () => {
+      const testUrl = 'blob://user-loop.wav';
+      
+      const result = createUserLoop(testUrl, mockTargetNode);
+      
+      expect(result.playerRef).toBeDefined();
+      expect(result.playerRef.current).toBeDefined();
+      expect(result.controlRef).toBeDefined();
+      expect(result.controlRef.current).toBeDefined();
+      
+      // Verify player was connected to target
+      expect(result.playerRef.current.connect).toHaveBeenCalledWith(mockTargetNode);
+    });
+
+    it('should return control interface with start/stop/dispose methods', () => {
+      const testUrl = 'blob://test.wav';
+      
+      const { controlRef } = createUserLoop(testUrl, mockTargetNode);
+      
+      expect(controlRef.current.start).toBeDefined();
+      expect(controlRef.current.stop).toBeDefined();
+      expect(controlRef.current.dispose).toBeDefined();
+      expect(typeof controlRef.current.start).toBe('function');
+      expect(typeof controlRef.current.stop).toBe('function');
+    });
+
+    it('should initialize player with mute property', () => {
+      const testUrl = 'blob://test.wav';
+      
+      const { controlRef } = createUserLoop(testUrl, mockTargetNode);
+      
+      expect(controlRef.current.mute).toBe(false);
     });
   });
 });
