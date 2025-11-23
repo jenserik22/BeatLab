@@ -78,6 +78,7 @@ export const useDrumMachine = (drumSounds) => {
   const sequenceRef = useRef(null); // Ref to store the Tone.Sequence instance
   const effectNodesRef = useRef([]);
   const kitDataRef = useRef(null); // Stores { synths, drumVolumes, velocityShapes, effectNodes }
+  const isInitialMount = useRef(true);
 
   // Use a ref to store the latest pattern state for the Tone.Sequence callback
   const patternRef = useRef(pattern);
@@ -271,26 +272,12 @@ export const useDrumMachine = (drumSounds) => {
 
   // Rebuild sequence when stepCount changes
   useEffect(() => {
-    if (!sequenceRef.current) return;
-    sequenceRef.current.stop();
-    sequenceRef.current.dispose();
-    sequenceRef.current = new Tone.Sequence(
-      (time, step) => {
-        setCurrentStep(step);
-        drumSounds.forEach(sound => {
-          if (patternRef.current[sound.name][step]) {
-            if (sound.type === 'membrane') {
-              synths.current[sound.name].triggerAttackRelease(sound.note, '8n', time);
-            } else if (sound.type === 'noise') {
-              synths.current[sound.name].triggerAttackRelease('8n', time);
-            }
-          }
-        });
-      },
-      Array.from({ length: stepCount }, (_, i) => i),
-      '16n'
-    ).start(0);
-  }, [stepCount, drumSounds]);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      rebuildSequencer();
+    }
+  }, [rebuildSequencer]);
 
   // Update BPM when bpm state changes
   useEffect(() => {
@@ -366,6 +353,7 @@ export const useDrumMachine = (drumSounds) => {
   const handleStepCountChange = (e) => {
     const next = parseInt(e.target.value, 10);
     if (!Number.isInteger(next) || next <= 0) return;
+    handleStop();
     const adapted = adaptPattern(patternRef.current, drumSounds, next);
     setPattern(adapted);
     setStepCountState(next);
