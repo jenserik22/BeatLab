@@ -472,6 +472,11 @@ margin-top: 40px;
   flex-grow: 1;
 }
 
+.loop-control .volume-control label {
+  min-width: 35px;
+  text-align: right;
+}
+
 .loop-control .volume-control input[type="range"] {
   width: 100%;
 }
