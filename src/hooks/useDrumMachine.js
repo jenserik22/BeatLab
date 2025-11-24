@@ -121,16 +121,22 @@ export const useDrumMachine = (drumSounds) => {
     sequenceRef.current = new Tone.Sequence(
       (time, step) => {
         setCurrentStep(step);
-        drumSounds.forEach(sound => {
+        drumSounds.forEach((sound, index) => {
           if (patternRef.current[sound.name][step]) {
             const velocity = getVelocityForStep(kitDataRef.current?.velocityShapes, sound.name, step);
             const targetSynth = synths.current[sound.name];
             if (!targetSynth) return;
 
+            // Noise synths need micro-offsets to prevent "Start time must be strictly greater" errors
+            // when multiple noise synths trigger at the exact same time. Membrane synths don't have this issue.
+            // 0.1ms offset (0.0001s) is completely imperceptible but prevents the timing conflict.
+            const noiseOffset = sound.type === 'noise' ? index * 0.0001 : 0;
+            const triggerTime = time + noiseOffset;
+
             if (sound.type === 'membrane') {
-              targetSynth.triggerAttackRelease(sound.note, '8n', time, velocity);
+              targetSynth.triggerAttackRelease(sound.note, '8n', triggerTime, velocity);
             } else if (sound.type === 'noise') {
-              targetSynth.triggerAttackRelease('8n', time, velocity);
+              targetSynth.triggerAttackRelease('8n', triggerTime, velocity);
             }
           }
         });
