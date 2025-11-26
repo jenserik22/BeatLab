@@ -123,6 +123,17 @@ export const useDrumMachine = (drumSounds) => {
         setCurrentStep(step);
         drumSounds.forEach((sound, index) => {
           if (patternRef.current[sound.name][step]) {
+            // Choke logic
+            const kitSound = currentKit.drums[sound.name];
+            if (kitSound?.chokes?.length > 0) {
+              kitSound.chokes.forEach(chokedSoundName => {
+                const chokedSynth = synths.current[chokedSoundName];
+                if (chokedSynth) {
+                  chokedSynth.triggerRelease(time);
+                }
+              });
+            }
+
             const velocity = getVelocityForStep(kitDataRef.current?.velocityShapes, sound.name, step);
             const targetSynth = synths.current[sound.name];
             if (!targetSynth) return;
@@ -144,7 +155,7 @@ export const useDrumMachine = (drumSounds) => {
       Array.from({ length: stepCount }, (_, i) => i),
       '16n'
     ).start(0);
-  }, [drumSounds, stepCount]);
+  }, [drumSounds, stepCount, currentKit]);
 
   // Initialize Tone.js instruments once
   useEffect(() => {
@@ -276,14 +287,14 @@ export const useDrumMachine = (drumSounds) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array: runs once on mount
 
-  // Rebuild sequence when stepCount changes
+  // Rebuild sequence when stepCount or kit changes
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else {
       rebuildSequencer();
     }
-  }, [rebuildSequencer]);
+  }, [rebuildSequencer, currentKit, stepCount]);
 
   // Update BPM when bpm state changes
   useEffect(() => {
@@ -404,12 +415,9 @@ export const useDrumMachine = (drumSounds) => {
       setFilterQ(kit.defaultFilterQ);
     }
 
-    // Rebuild sequence with new synths
-    rebuildSequencer();
-
     setCurrentKit(kit);
     debugLog('Kit loaded:', kit.name);
-  }, [filter, handleStop, rebuildSequencer]);
+  }, [filter, handleStop]);
 
   const loadPattern = useCallback((patternName, patternData) => {
     if (patternData.pattern) { // Check for new format
@@ -746,23 +754,33 @@ export const useDrumMachine = (drumSounds) => {
   };
 
   const playSound = (soundName) => {
-
     const sound = drumSounds.find(s => s.name === soundName);
-    if (sound) {
-      const duration = '8n';
-      const targetSynth = synths.current[sound.name];
-      if (!targetSynth) {
-        return;
-      }
+    if (!sound) return;
 
-      if (sound.type === 'membrane') {
-        targetSynth.triggerAttackRelease(sound.note, duration);
-      } else if (sound.type === 'noise') {
-        targetSynth.triggerAttackRelease(duration);
-      }
-      setActivePad(soundName);
-      setTimeout(() => setActivePad(null), 100); // Visual feedback duration
+    // Choke logic
+    const kitSound = currentKit.drums[sound.name];
+    if (kitSound?.chokes?.length > 0) {
+      kitSound.chokes.forEach(chokedSoundName => {
+        const chokedSynth = synths.current[chokedSoundName];
+        if (chokedSynth) {
+          chokedSynth.triggerRelease();
+        }
+      });
     }
+
+    const duration = '8n';
+    const targetSynth = synths.current[sound.name];
+    if (!targetSynth) {
+      return;
+    }
+
+    if (sound.type === 'membrane') {
+      targetSynth.triggerAttackRelease(sound.note, duration);
+    } else if (sound.type === 'noise') {
+      targetSynth.triggerAttackRelease(duration);
+    }
+    setActivePad(soundName);
+    setTimeout(() => setActivePad(null), 100); // Visual feedback duration
   };
 
   return {

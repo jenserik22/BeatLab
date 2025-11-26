@@ -47,13 +47,14 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.02 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: []
       },
       'Open Hi-Hat': {
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.2, sustain: 0.05, release: 0.05 }
+          envelope: { attack: 0.001, decay: 0.2, sustain: 0.05, release: 0.5 }
         },
         effects: []
       },
@@ -166,6 +167,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.02 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           {
             type: 'Filter',
@@ -178,7 +180,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.3, sustain: 0.05, release: 0.1 }
+          envelope: { attack: 0.001, decay: 0.3, sustain: 0.05, release: 0.5 }
         },
         effects: [
           {
@@ -357,6 +359,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.02 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           {
             type: 'Filter',
@@ -369,7 +372,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.2, sustain: 0.05, release: 0.05 }
+          envelope: { attack: 0.001, decay: 0.2, sustain: 0.05, release: 0.5 }
         },
         effects: [
           {
@@ -553,6 +556,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.02 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           {
             type: 'Filter',
@@ -565,7 +569,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.3, sustain: 0.05, release: 0.1 }
+          envelope: { attack: 0.001, decay: 0.3, sustain: 0.05, release: 0.5 }
         },
         effects: [
           {
@@ -733,6 +737,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.01 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           { type: 'Filter', options: [{ frequency: 6000, type: 'highpass' }], connectTo: 'target' }
         ]
@@ -741,7 +746,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.05 }
+          envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.5 }
         },
         effects: [
           { type: 'Filter', options: [{ frequency: 5000, type: 'highpass' }], connectTo: 'target' }
@@ -831,6 +836,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.02 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           { type: 'Filter', options: [{ frequency: 7000, type: 'highpass', Q: 1.5 }], connectTo: 'target' }
         ]
@@ -839,7 +845,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.1 }
+          envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.5 }
         },
         effects: [
           { type: 'Filter', options: [{ frequency: 6000, type: 'highpass' }], connectTo: 'target' }
@@ -932,6 +938,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.03, sustain: 0, release: 0.01 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           { type: 'Filter', options: [{ frequency: 8000, type: 'highpass' }], connectTo: 'target' }
         ]
@@ -940,7 +947,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.05 }
+          envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.5 }
         },
         effects: [
           { type: 'Filter', options: [{ frequency: 7000, type: 'highpass' }], connectTo: 'target' }
@@ -1041,6 +1048,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.02, sustain: 0, release: 0.01 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           { type: 'Filter', options: [{ frequency: 6000, type: 'highpass' }], connectTo: 'target' }
         ]
@@ -1049,7 +1057,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.03 }
+          envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.5 }
         },
         effects: [
           { type: 'Filter', options: [{ frequency: 5000, type: 'highpass' }], connectTo: 'target' }
@@ -1150,6 +1158,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.02 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           { type: 'Filter', options: [{ frequency: 5000, type: 'highpass', Q: 1.5 }], connectTo: 'target' }
         ]
@@ -1158,7 +1167,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.05 }
+          envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.5 }
         },
         effects: [
           { type: 'Filter', options: [{ frequency: 4500, type: 'highpass' }], connectTo: 'target' }
@@ -1261,6 +1270,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.02, sustain: 0, release: 0.005 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           { type: 'BitCrusher', options: [{ bits: 5 }], connectTo: 'target' }
         ]
@@ -1269,7 +1279,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.02 }
+          envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.5 }
         },
         effects: [
           { type: 'Filter', options: [{ frequency: 3000, type: 'highpass' }], connectTo: 'next' },
@@ -1377,6 +1387,7 @@ export const KITS_CONFIG = [
           noise: { type: 'white' },
           envelope: { attack: 0.001, decay: 0.03, sustain: 0, release: 0.01 }
         },
+        chokes: ['Open Hi-Hat'],
         effects: [
           { type: 'Filter', options: [{ frequency: 7000, type: 'highpass' }], connectTo: 'target' }
         ]
@@ -1385,7 +1396,7 @@ export const KITS_CONFIG = [
         type: 'NoiseSynth',
         options: {
           noise: { type: 'white' },
-          envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.05 }
+          envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.5 }
         },
         effects: [
           { type: 'Filter', options: [{ frequency: 6000, type: 'highpass' }], connectTo: 'target' }
