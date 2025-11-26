@@ -473,7 +473,7 @@ margin-top: 40px;
 }
 
 .loop-control .volume-control label {
-  min-width: 35px;
+  width: 40px;
   text-align: right;
 }
 
