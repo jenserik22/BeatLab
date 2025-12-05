@@ -104,6 +104,27 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
     const targetRounds = Math.ceil(duration / patternLengthInSeconds);
     const sixteenthNoteDuration = 60 / (bpm * 4);
 
+    // Pre-load all user loop buffers before rendering
+    const loadedUserLoops = [];
+    if (userLoops && Array.isArray(userLoops)) {
+      for (const loop of userLoops) {
+        if (loop && loop.playing && loop.url) {
+          try {
+            // Load the audio buffer
+            const buffer = await Tone.Buffer.fromUrl(loop.url);
+            loadedUserLoops.push({
+              buffer: buffer.get(),
+              volume: loop.volume || -10,
+              id: loop.id
+            });
+          } catch (error) {
+            console.warn(`Failed to load user loop ${loop.id}:`, error);
+            // Continue without this loop
+          }
+        }
+      }
+    }
+
     return await Tone.Offline(({ transport }) => {
       const masterVolNode = new Tone.Volume(masterVolume || -10);
       masterVolNode.toDestination();
@@ -237,6 +258,26 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
         }
       });
 
+      // Add user-uploaded loops (using pre-loaded buffers)
+      loadedUserLoops.forEach(({ buffer, volume }) => {
+        try {
+          // Create player with pre-loaded buffer
+          const loopPlayer = new Tone.Player({
+            url: buffer,  // Use the pre-loaded buffer
+            loop: true,
+            autostart: false
+          }).connect(filterNode);
+          
+          // Set volume
+          loopPlayer.volume.value = volume;
+          
+          // Start immediately and loop for duration
+          transport.scheduleOnce(() => loopPlayer.start(0), 0);
+        } catch (error) {
+          console.warn(`Error creating user loop:`, error);
+        }
+      })
+
       transport.bpm.value = bpm;
       transport.schedule((time) => {
         const progress = (time / duration) * 100;
@@ -245,7 +286,7 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
 
       transport.start(0).stop(duration);
     }, duration);
-  }, [calculateDurationInSeconds, drumSounds, pattern, drumVolumes, masterVolume, filterFreq, filterQ, stepCount, bpm, activeLoopConfigs]);
+  }, [calculateDurationInSeconds, drumSounds, pattern, drumVolumes, masterVolume, filterFreq, filterQ, stepCount, bpm, activeLoopConfigs, userLoops]);
 
   const handleExport = useCallback(async () => {
     setIsExporting(true);
