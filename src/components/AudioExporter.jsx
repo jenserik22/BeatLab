@@ -3,7 +3,7 @@ import * as Tone from 'tone';
 import { LOOP_CONFIGS } from '../constants/loopConfigs';
 
 const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes, 
-                          masterVolume, filterFreq, filterQ, loopPlaying, loopVolume, userLoops }) => {
+                          masterVolume, filterFreq, filterQ, loopPlaying, loopVolume, userLoops, currentKit }) => {
 
   // Prepare active loop configurations for export
   const activeLoopConfigs = React.useMemo(() => {
@@ -133,20 +133,110 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
       filterNode.Q.value = filterQ || 1;
 
       const synths = {};
-      drumSounds.forEach(sound => {
-        const volNode = new Tone.Volume(drumVolumes[sound.name] || -10).connect(filterNode);
+      const drumVolumes = {};
+      
+      // Use kit configuration if available
+      if (currentKit && currentKit.drums) {
+        // Kit-based drum creation
+        Object.entries(currentKit.drums).forEach(([drumName, drumConfig]) => {
+          try {
+            // Create volume node
+            const volNode = new Tone.Volume(currentKit.masterVolume || -10);
+            drumVolumes[drumName] = volNode;
+            
+            // Create synth based on type
+            let synth;
+            switch (drumConfig.type) {
+              case 'MembraneSynth':
+                synth = new Tone.MembraneSynth(drumConfig.options || {});
+                break;
+              case 'NoiseSynth':
+                synth = new Tone.NoiseSynth(drumConfig.options || {});
+                break;
+              default:
+                console.warn(`Unknown drum synth type: ${drumConfig.type}, defaulting to NoiseSynth`);
+                synth = new Tone.NoiseSynth();
+            }
+            
+            synths[drumName] = synth;
+            
+            // Build effect chain if present
+            let lastNode = synth;
+            if (drumConfig.effects && Array.isArray(drumConfig.effects)) {
+              drumConfig.effects.forEach(effectConfig => {
+                let effectNode;
+                switch (effectConfig.type) {
+                  case 'Filter':
+                    effectNode = new Tone.Filter(...effectConfig.options);
+                    break;
+                  case 'BitCrusher':
+                    effectNode = new Tone.BitCrusher(...effectConfig.options);
+                    break;
+                  case 'Distortion':
+                    effectNode = new Tone.Distortion(...effectConfig.options);
+                    break;
+                  default:
+                    return;
+                }
+                
+                lastNode.connect(effectNode);
+                lastNode = effectNode;
+              });
+            }
+            
+            // Connect to volume, then to filter
+            lastNode.connect(volNode);
+            volNode.connect(filterNode);
+            
+          } catch (error) {
+            console.warn(`Error creating kit drum ${drumName}:`, error);
+          }
+        });
         
-        if (sound.type === 'membrane') {
-          synths[sound.name] = new Tone.MembraneSynth({
-            envelope: { attack: 0.005, decay: 0.4, sustain: 0, release: 0.1 }
-          }).connect(volNode);
-        } else {
-          synths[sound.name] = new Tone.NoiseSynth({
-            noise: { type: 'white' },
-            envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.05 },
-          }).connect(volNode);
-        }
-      });
+        // Add any missing drums from drumSounds that aren't in the kit
+        drumSounds.forEach(sound => {
+          if (!synths[sound.name]) {
+            const volNode = new Tone.Volume(currentKit.masterVolume || -10);
+            drumVolumes[sound.name] = volNode;
+            
+            // Default based on type
+            if (sound.type === 'membrane') {
+              synths[sound.name] = new Tone.MembraneSynth({
+                envelope: { attack: 0.005, decay: 0.4, sustain: 0, release: 0.1 }
+              });
+            } else {
+              synths[sound.name] = new Tone.NoiseSynth({
+                noise: { type: 'white' },
+                envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.05 },
+              });
+            }
+            
+            synths[sound.name].connect(volNode);
+            volNode.connect(filterNode);
+          }
+        });
+        
+      } else {
+        // Fallback to classic/default behavior if no kit
+        drumSounds.forEach(sound => {
+          const volNode = new Tone.Volume(drumVolumes[sound.name] || -10);
+          drumVolumes[sound.name] = volNode;
+          
+          if (sound.type === 'membrane') {
+            synths[sound.name] = new Tone.MembraneSynth({
+              envelope: { attack: 0.005, decay: 0.4, sustain: 0, release: 0.1 }
+            });
+          } else {
+            synths[sound.name] = new Tone.NoiseSynth({
+              noise: { type: 'white' },
+              envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.05 },
+            });
+          }
+          
+          synths[sound.name].connect(volNode);
+          volNode.connect(filterNode);
+        });
+      }
 
       for (let round = 0; round < targetRounds; round++) {
         drumSounds.forEach((sound) => {
@@ -286,7 +376,7 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
 
       transport.start(0).stop(duration);
     }, duration);
-  }, [calculateDurationInSeconds, drumSounds, pattern, drumVolumes, masterVolume, filterFreq, filterQ, stepCount, bpm, activeLoopConfigs, userLoops]);
+  }, [calculateDurationInSeconds, drumSounds, pattern, drumVolumes, masterVolume, filterFreq, filterQ, stepCount, bpm, activeLoopConfigs, userLoops, currentKit]);
 
   const handleExport = useCallback(async () => {
     setIsExporting(true);

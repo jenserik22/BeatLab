@@ -186,6 +186,7 @@ function App() {
             loop5={drumMachine.loop5}
             loop6={drumMachine.loop6}
             userLoops={drumMachine.userLoops}
+            currentKit={drumMachine.currentKit}
           />
             <KitSelector currentKit={drumMachine.currentKit} loadKit={drumMachine.loadKit} />
             <Patterns {...drumMachine} predefinedPatterns={drumMachine.predefinedPatterns} />

@@ -3,7 +3,7 @@ import { dbToPercent, percentToDb } from '../utils/volume';
 import { DEFAULTS } from '../constants/config';
 import AudioExporter from './AudioExporter';
 
-const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl, drumSounds, pattern, drumVolumes, filterFreq, filterQ, loopPlaying, loopVolume, loop1, loop2, loop3, loop4, loop5, loop6, userLoops }) => {
+const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl, drumSounds, pattern, drumVolumes, filterFreq, filterQ, loopPlaying, loopVolume, loop1, loop2, loop3, loop4, loop5, loop6, userLoops, currentKit }) => {
   const [shareStatus, setShareStatus] = useState(null);
   const shareTimeoutRef = useRef(null);
 
@@ -89,6 +89,7 @@ const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handleP
         loop5={loop5}
         loop6={loop6}
         userLoops={userLoops}
+        currentKit={currentKit}
       />
       <div className="bpm-control">
         <label htmlFor="bpm">BPM: {bpm}</label>
