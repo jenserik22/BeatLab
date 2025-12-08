@@ -230,31 +230,27 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
         });
       }
 
-      // Create a pattern that automatically loops
+      // Create sequences for drum patterns
       drumSounds.forEach((sound) => {
         const soundPattern = pattern[sound.name];
         if (soundPattern && Array.isArray(soundPattern)) {
-          // Build array of active steps with their times within one pattern
-          const patternData = [];
-          soundPattern.forEach((isActive, stepIndex) => {
-            if (isActive) {
-              const stepTime = stepIndex * sixteenthNoteDuration;
-              patternData.push({ time: stepTime, note: sound.note || '8n' });
-            }
-          });
-          
-          // Create a looping pattern for this drum
-          if (patternData.length > 0) {
-            new Tone.Loop((time) => {
-              patternData.forEach(step => {
+          // Create a sequence that triggers sounds at the correct steps
+          new Tone.Sequence(
+            (time, step) => {
+              if (soundPattern[step]) {
+                const targetSynth = synths[sound.name];
+                if (!targetSynth) return;
+
                 if (sound.type === 'membrane') {
-                  synths[sound.name].triggerAttackRelease(sound.note, '8n', time + step.time);
+                  targetSynth.triggerAttackRelease(sound.note, '8n', time);
                 } else {
-                  synths[sound.name].triggerAttackRelease('8n', time + step.time);
+                  targetSynth.triggerAttackRelease('8n', time);
                 }
-              });
-            }, patternLengthInSeconds).start(0);
-          }
+              }
+            },
+            Array.from({ length: stepCount }, (_, i) => i),
+            '16n'
+          ).start(0);
         }
       });
 

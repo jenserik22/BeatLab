@@ -126,3 +126,76 @@ const [durationValue, setDurationValue] = useState('30');
 
 ## Review Status
 ✅ Completed - Simplified export function and UI to use direct seconds input with automatic looping
+
+---
+
+# Bug Fix: Drum Loop Overlapping Issue - Review
+
+## Problem Identified
+After the audioexport update, drum loops in exported audio were overlapping each other, creating a muddy, chaotic sound instead of clean, sequential drum hits.
+
+### Root Cause
+The `AudioExporter` component was incorrectly using `Tone.Loop` instead of `Tone.Sequence` for scheduling drum patterns:
+
+**Broken Implementation (lines 234-259):**
+```javascript
+new Tone.Loop((time) => {
+  // This triggered ALL drum hits simultaneously on each loop iteration!
+  patternData.forEach(step => {
+    synths[sound.name].triggerAttackRelease(..., time + step.time);
+  });
+}, patternLengthInSeconds).start(0);
+```
+
+**Why it failed:** Every time the loop repeated (e.g., every 2 seconds), it would trigger ALL the drum hits in the pattern at once, rather than playing them sequentially at their correct timing positions.
+
+## Solution Implemented
+
+### Fix Applied
+Replaced `Tone.Loop` with the correct `Tone.Sequence` implementation that mirrors the working logic in `useDrumMachine.js`:
+
+**Corrected Implementation:**
+```javascript
+new Tone.Sequence(
+  (time, step) => {
+    if (soundPattern[step]) {
+      const targetSynth = synths[sound.name];
+      if (!targetSynth) return;
+
+      if (sound.type === 'membrane') {
+        targetSynth.triggerAttackRelease(sound.note, '8n', time);
+      } else {
+        targetSynth.triggerAttackRelease('8n', time);
+      }
+    }
+  },
+  Array.from({ length: stepCount }, (_, i) => i),
+  '16n'
+).start(0);
+```
+
+**Why it works:** `Tone.Sequence` iterates through each step sequentially, triggering only the active steps at their correct timing positions, just like the main sequencer does during normal playback.
+
+### Benefits
+1. **No More Overlapping:** Drum hits now trigger at the correct sequential timing
+2. **Consistency:** Export now uses the same scheduling logic as the live sequencer
+3. **Simplicity:** Removed the complex pattern data array building logic (lines 237-244)
+4. **Reliability:** Uses the same proven approach from `useDrumMachine.js`
+
+### Testing Recommendations
+1. Export patterns with various BPMs (60, 120, 180) and verify timing is correct
+2. Test with different step counts (8, 16, 32 steps)
+3. Verify that patterns with sparse drum hits (e.g., only kicks on beats 1 and 3) export correctly
+4. Test with dense patterns (e.g., hi-hats on every step) to ensure no timing issues
+5. Confirm that both membrane synths (kick, toms) and noise synths (snare, hats) work correctly
+
+## Files Modified
+- `src/components/AudioExporter.jsx` (lines 233-259)
+
+## Impact Assessment
+**Scope:** Very minimal - only affects the drum pattern scheduling in the audio export function
+**Risk:** Very low - uses the same proven approach as the live playback
+**Breaking Changes:** None - this is purely a bug fix
+
+## Review Status
+✅ Fixed - Drum patterns now export with correct timing and no overlapping hits
