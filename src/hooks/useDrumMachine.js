@@ -545,7 +545,14 @@ export const useDrumMachine = (drumSounds) => {
     });
   }, [loopVolume]);
 
-  // Create/destroy user loop players when loops change
+  const [userLoopPlaying, setUserLoopPlaying] = useState(() => {
+    const initialState = {};
+    userLoops.forEach(loop => {
+        initialState[loop.id] = loop.playing;
+    });
+    return initialState;
+  });
+
   useEffect(() => {
     // Create players for new loops with URLs
     userLoops.forEach(loop => {
@@ -572,6 +579,24 @@ export const useDrumMachine = (drumSounds) => {
       }
     });
   }, [userLoops, masterVol]);
+
+  useEffect(() => {
+    // Synchronize Tone.js loop states with React state
+    Object.entries(userLoopControls.current).forEach(([loopId, control]) => {
+      if (control?.current) {
+        const loop = userLoops.find(l => l.id === loopId);
+        if (loop) {
+          if (loop.playing && Tone.Transport.state === 'started') {
+            // To avoid scheduling conflicts, start at the next 16th note quantized time
+            const quantizedTime = Tone.Transport.nextSubdivision('16n');
+            control.current.start(quantizedTime);
+          } else {
+            control.current.stop();
+          }
+        }
+      }
+    });
+  }, [userLoops, isPlaying]);
 
   // Handle user loop mute state
   useEffect(() => {
@@ -668,19 +693,16 @@ export const useDrumMachine = (drumSounds) => {
 
   const toggleUserLoop = (loopId) => {
     setUserLoops(prev => {
-      const updatedLoops = prev.map(loop => 
+      const updatedLoops = prev.map(loop =>
         loop.id === loopId ? { ...loop, playing: !loop.playing } : loop
       );
-      
-      // Start playing immediately if transport is already running
+  
+      // This is now the single source of truth for playback state
       const toggledLoop = updatedLoops.find(l => l.id === loopId);
-      if (toggledLoop?.playing && Tone.Transport.state === 'started') {
-        const control = userLoopControls.current[loopId];
-        if (control?.current) {
-          control.current.start(0);
-        }
+      if (toggledLoop) {
+        setUserLoopPlaying(prev => ({ ...prev, [loopId]: toggledLoop.playing }));
       }
-      
+  
       return updatedLoops;
     });
   };
