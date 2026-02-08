@@ -1,7 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
 import { useDrumMachine } from './useDrumMachine';
-import { KITS_CONFIG } from '../constants/kitsConfig';
-import { DEFAULTS } from '../constants/config';
 
 // Mock Tone.js and other dependencies
 jest.mock('tone', () => ({

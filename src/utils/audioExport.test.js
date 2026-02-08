@@ -29,7 +29,7 @@ describe('Audio Export Duration Calculations', () => {
     it('should calculate correct pattern length at 180 BPM', () => {
       const bpm = 180;
       const stepCount = 16;
-      const expectedLength = (4 * 60) / 180; // 4 beats * 60 seconds / 180 BPM = 1.333 seconds
+      // 4 beats * 60 seconds / 180 BPM = 1.333 seconds
       
       expect(calculatePatternLengthInSeconds(bpm, stepCount)).toBeCloseTo(1.333, 2);
     });
@@ -44,7 +44,7 @@ describe('Audio Export Duration Calculations', () => {
       expect(calculatePatternLengthInSeconds(bpm, 16)).toBe((4 * 60) / 120);
       
       // 32 steps = 8 beats
-      expect(calculatePatternInLengthInSeconds(bpm, 32)).toBe((8 * 60) / 120);
+      expect(calculatePatternLengthInSeconds(bpm, 32)).toBe((8 * 60) / 120);
     });
   });
 

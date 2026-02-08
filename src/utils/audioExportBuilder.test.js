@@ -117,7 +117,7 @@ describe('audioExportBuilder', () => {
 
     it('should connect synths to filter node', () => {
       const filterNode = new Tone.Filter();
-      const connectSpy = jest.spyOn(filterNode, 'connect');
+      jest.spyOn(filterNode, 'connect');
       const result = createDrumSynths(mockDrumSounds, mockDrumVolumes, filterNode);
 
       Object.values(result.synths).forEach(synth => {
@@ -263,10 +263,11 @@ describe('audioExportBuilder', () => {
         duration: 8
       };
 
-      const result = await renderDrumsOffline(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const renderResult = await renderDrumsOffline(options);
 
       expect(Tone.Offline).toHaveBeenCalled();
-      expect(result).toBeDefined();
+      expect(renderResult).toBeDefined();
     });
 
     it('should use progress callback if provided', async () => {
@@ -343,9 +344,3 @@ describe('audioExportBuilder', () => {
     });
   });
 });
-
-export {
-  mockDrumSounds,
-  mockPattern,
-  mockDrumVolumes
-};

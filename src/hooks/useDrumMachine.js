@@ -545,13 +545,7 @@ export const useDrumMachine = (drumSounds) => {
     });
   }, [loopVolume]);
 
-  const [userLoopPlaying, setUserLoopPlaying] = useState(() => {
-    const initialState = {};
-    userLoops.forEach(loop => {
-        initialState[loop.id] = loop.playing;
-    });
-    return initialState;
-  });
+
 
   useEffect(() => {
     // Create players for new loops with URLs
@@ -696,12 +690,6 @@ export const useDrumMachine = (drumSounds) => {
       const updatedLoops = prev.map(loop =>
         loop.id === loopId ? { ...loop, playing: !loop.playing } : loop
       );
-  
-      // This is now the single source of truth for playback state
-      const toggledLoop = updatedLoops.find(l => l.id === loopId);
-      if (toggledLoop) {
-        setUserLoopPlaying(prev => ({ ...prev, [loopId]: toggledLoop.playing }));
-      }
   
       return updatedLoops;
     });

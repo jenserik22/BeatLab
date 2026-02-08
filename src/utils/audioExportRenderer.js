@@ -41,11 +41,6 @@ export const renderAudioOffline = async (options) => {
     duration = 30
   } = validatedOptions;
 
-  // Calculate timing
-  const patternLengthInSeconds = (stepCount / 4) * (60 / bpm);
-  const targetRounds = Math.max(1, Math.ceil(duration / patternLengthInSeconds));
-  const sixteenthNoteDuration = 60 / (bpm * 4);
-
   return await Tone.Offline(({ transport }) => {
     // Handle progress tracking
     if (progressCallback) {
@@ -53,7 +48,7 @@ export const renderAudioOffline = async (options) => {
     }
 
     // Create master audio graph
-    const { filterNode, registerNodes } = createDrumAudioGraph(
+    const { filterNode } = createDrumAudioGraph(
       { masterVolume, filterFreq, filterQ },
       Tone.Destination
     );
@@ -325,10 +320,12 @@ export const downloadAudioFile = (blob, filename) => {
 };
 
 // Default export
-export default {
+const audioExportRenderer = {
   renderAudioOffline,
   calculateExportDuration,
   validateRenderOptions,
   encodeWAV,
   downloadAudioFile
 };
+
+export default audioExportRenderer;

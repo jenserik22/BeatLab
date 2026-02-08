@@ -1,5 +1,5 @@
 import { generatePattern } from './patternFactory';
-import { adaptPatternToStepCount, createEmptyPattern } from './patternBuilder';
+import { adaptPatternToStepCount } from './patternBuilder';
 
 // Mock data matching the original hardcoded patterns
 const mockDrumSounds = [

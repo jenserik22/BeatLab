@@ -150,13 +150,13 @@ export const renderDrumsOffline = async (options) => {
 
   return await Tone.Offline(({ transport }) => {
     // Create audio graph
-    const { filterNode, registerNodes } = createDrumAudioGraph(
+    const { filterNode } = createDrumAudioGraph(
       { masterVolume, filterFreq, filterQ },
       Tone.Destination
     );
 
     // Create drum synths
-    const { synths, volumeNodes } = createDrumSynths(
+    const { synths } = createDrumSynths(
       drumSounds,
       drumVolumes,
       filterNode
@@ -248,7 +248,7 @@ export const createTestTone = (context, note = 'C5', duration = '4n') => {
 export const renderOffline = renderDrumsOffline;
 
 // Export all utilities
-export default {
+const audioExportBuilder = {
   createDrumAudioGraph,
   createDrumSynths,
   scheduleDrumPattern,
@@ -259,3 +259,5 @@ export default {
   createTestTone,
   renderOffline
 };
+
+export default audioExportBuilder;

@@ -92,9 +92,6 @@ const AudioExporter = ({ drumSounds, bpm, stepCount, pattern, drumVolumes,
 
   const renderAudioOffline = useCallback(async () => {
     const duration = calculateDurationInSeconds();
-    
-    const patternLengthInSeconds = (stepCount / 4) * (60 / bpm);
-    const sixteenthNoteDuration = 60 / (bpm * 4);
 
     // Pre-load all user loop buffers before rendering
     const loadedUserLoops = [];

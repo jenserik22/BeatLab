@@ -1,6 +1,5 @@
 import {
   readJSON,
-  writeJSON,
   getCurrentPattern,
   setCurrentPattern,
   getSavedPatterns,

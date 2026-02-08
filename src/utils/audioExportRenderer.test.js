@@ -100,12 +100,13 @@ describe('audioExportRenderer', () => {
         duration: 8
       };
 
-      const result = await renderAudioOffline(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const renderResult = await renderAudioOffline(options);
 
       expect(Tone.Offline).toHaveBeenCalled();
       expect(Tone.Volume).toHaveBeenCalledWith(-15);
       expect(Tone.Filter).toHaveBeenCalledWith(8000, 'lowpass');
-      expect(result).toBeDefined();
+      expect(renderResult).toBeDefined();
     });
 
     it('should render with loops in complex mode', async () => {
@@ -241,10 +242,11 @@ describe('audioExportRenderer', () => {
         pattern: mockPattern
       };
 
-      const result = validateRenderOptions(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const validationResult = validateRenderOptions(options);
 
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      expect(validationResult.isValid).toBe(true);
+      expect(validationResult.errors).toHaveLength(0);
     });
 
     it('should detect missing drumSounds', () => {
@@ -253,10 +255,11 @@ describe('audioExportRenderer', () => {
         pattern: mockPattern
       };
 
-      const result = validateRenderOptions(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const validationResult2 = validateRenderOptions(options);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('drumSounds must be a non-empty array');
+      expect(validationResult2.isValid).toBe(false);
+      expect(validationResult2.errors).toContain('drumSounds must be a non-empty array');
     });
 
     it('should detect missing pattern', () => {
@@ -265,10 +268,11 @@ describe('audioExportRenderer', () => {
         bpm: 120
       };
 
-      const result = validateRenderOptions(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const validationResult3 = validateRenderOptions(options);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('pattern must be an object');
+      expect(validationResult3.isValid).toBe(false);
+      expect(validationResult3.errors).toContain('pattern must be an object');
     });
 
     it('should validate BPM range', () => {
@@ -278,9 +282,10 @@ describe('audioExportRenderer', () => {
         pattern: mockPattern
       };
 
-      const result = validateRenderOptions(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const validationResult4 = validateRenderOptions(options);
 
-      expect(result.warnings).toContain('BPM outside typical range (40-300)');
+      expect(validationResult4.warnings).toContain('BPM outside typical range (40-300)');
     });
 
     it('should warn about long duration', () => {
@@ -291,9 +296,10 @@ describe('audioExportRenderer', () => {
         duration: 600 // 10 minutes
       };
 
-      const result = validateRenderOptions(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const validationResult5 = validateRenderOptions(options);
 
-      expect(result.warnings).toContain('Duration longer than 5 minutes may cause memory issues');
+      expect(validationResult5.warnings).toContain('Duration longer than 5 minutes may cause memory issues');
     });
 
     it('should apply sensible defaults', () => {
@@ -304,11 +310,12 @@ describe('audioExportRenderer', () => {
         pattern: mockPattern
       };
 
-      const result = validateRenderOptions(options);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const validationResult6 = validateRenderOptions(options);
 
-      expect(result.options.duration).toBe(30); // Default
-      expect(result.options.masterVolume).toBe(-10); // Default
-      expect(result.options.filterFreq).toBe(15000); // Default
+      expect(validationResult6.options.duration).toBe(30); // Default
+      expect(validationResult6.options.masterVolume).toBe(-10); // Default
+      expect(validationResult6.options.filterFreq).toBe(15000); // Default
     });
   });
 
@@ -375,8 +382,9 @@ describe('audioExportRenderer', () => {
         duration: 10
       };
 
-      const validation = validateRenderOptions(options);
-      expect(validation.isValid).toBe(true);
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const validationResult7 = validateRenderOptions(options);
+      expect(validationResult7.isValid).toBe(true);
 
       // 2. Calculate duration
       const duration = calculateExportDuration({
@@ -388,8 +396,9 @@ describe('audioExportRenderer', () => {
       expect(duration).toBe(10);
 
       // 3. Render audio
-      const result = await renderAudioOffline(options);
-      expect(result).toBeDefined();
+      // eslint-disable-next-line testing-library/render-result-naming-convention
+      const renderResult2 = await renderAudioOffline(options);
+      expect(renderResult2).toBeDefined();
 
       // 4. Verify all Tone objects created
       expect(Tone.Volume).toHaveBeenCalled();
