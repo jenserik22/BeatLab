@@ -141,14 +141,7 @@ const Mixer = ({
                 onToggle={() => toggleUserLoop(loop.id)}
                 onVolumeChange={(value) => handleUserLoopVolumeChange(loop.id, value)}
                 onClear={() => handleClearUserLoop(loop.id)}
-              >
-                <button 
-                  onClick={() => handleClearUserLoop(loop.id)}
-                  className="clear-file-btn"
-                >
-                  Clear
-                </button>
-              </LoopControl>
+              />
             )}
           </div>
         ))}
