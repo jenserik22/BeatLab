@@ -92,6 +92,32 @@ Valid values: `normal`, `bold`, `100-900`, or remove the property.
 
 ---
 
+## Additional Fix: Improved Share Notification Toast
+
+### Changes Made:
+
+**1. Transport.jsx**
+- Added `isHiding` state for smooth exit animation
+- Created `dismissToast()` function with 300ms exit animation
+- Added `hideTimeoutRef` for cleanup
+- Toast now has:
+  - ✓ Success icon (checkmark) or ✗ Error icon (X)
+  - Close button (×) to manually dismiss
+  - Progress bar that shrinks over 3 seconds (visual countdown)
+  - Smooth slide-in/slide-out animations
+
+**2. App.css**
+- Moved toast to `top: 20px; right: 20px` (top-right corner)
+- Added gradient background matching the app's dark theme
+- Added cyan/magenta glow effect (`box-shadow`)
+- Progress bar with gradient animation
+- Success: Green icon, Error: Red icon
+- URL displayed in monospace font with cyan border
+- Higher z-index (`9999`) to ensure visibility
+- Responsive max-width (450px)
+
+---
+
 ## Review Summary
 
 ### Critical Issues (Should Fix)

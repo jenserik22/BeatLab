@@ -5,22 +5,38 @@ import AudioExporter from './AudioExporter';
 
 const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handlePlay, handleStop, toggleLoop, handleBpmChange, handleStepCountChange, handleMasterVolumeChange, getSharablePatternUrl, drumSounds, pattern, drumVolumes, filterFreq, filterQ, loopPlaying, loopVolume, loop1, loop2, loop3, loop4, loop5, loop6, userLoops, currentKit }) => {
   const [shareStatus, setShareStatus] = useState(null);
+  const [isHiding, setIsHiding] = useState(false);
   const shareTimeoutRef = useRef(null);
+  const hideTimeoutRef = useRef(null);
 
   useEffect(() => () => {
     if (shareTimeoutRef.current) {
       clearTimeout(shareTimeoutRef.current);
-      shareTimeoutRef.current = null;
+    }
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
     }
   }, []);
+
+  const dismissToast = () => {
+    setIsHiding(true);
+    hideTimeoutRef.current = setTimeout(() => {
+      setShareStatus(null);
+      setIsHiding(false);
+    }, 300);
+  };
 
   const showShareStatus = (message, tone = 'success', url = null) => {
     if (shareTimeoutRef.current) {
       clearTimeout(shareTimeoutRef.current);
     }
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+    }
+    setIsHiding(false);
     setShareStatus({ message, tone, url });
     shareTimeoutRef.current = setTimeout(() => {
-      setShareStatus(null);
+      dismissToast();
       shareTimeoutRef.current = null;
     }, 3000);
   };
@@ -127,13 +143,29 @@ const Transport = ({ isPlaying, isLooping, bpm, stepCount, masterVolume, handleP
       </div>
       {shareStatus && (
         <div
-          className={`share-status share-status--${shareStatus.tone}`}
+          className={`share-toast share-toast--${shareStatus.tone} ${isHiding ? 'share-toast--hiding' : ''}`}
           role="status"
+          aria-live="polite"
         >
-          <span>{shareStatus.message}</span>
-          {shareStatus.url && (
-            <span className="share-status__url"> {shareStatus.url}</span>
-          )}
+          <div className="share-toast__content">
+            <span className="share-toast__icon">
+              {shareStatus.tone === 'success' ? '✓' : '✗'}
+            </span>
+            <div className="share-toast__text">
+              <span className="share-toast__message">{shareStatus.message}</span>
+              {shareStatus.url && (
+                <span className="share-toast__url">{shareStatus.url}</span>
+              )}
+            </div>
+            <button 
+              className="share-toast__close"
+              onClick={dismissToast}
+              aria-label="Dismiss notification"
+            >
+              ×
+            </button>
+          </div>
+          <div className="share-toast__progress" />
         </div>
       )}
     </div>
