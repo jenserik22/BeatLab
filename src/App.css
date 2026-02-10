@@ -5,6 +5,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #1a1a2e; /* Dark background */
   color: #e0e0e0; /* Light text color */
+  overflow-x: hidden; /* Prevent scrollbar flash from toast animation */
 }
 
 .App {
@@ -1064,7 +1065,7 @@ select:focus {
 @keyframes toastSlideIn {
   from {
     opacity: 0;
-    transform: translateX(100%) scale(0.9);
+    transform: translateX(50px) scale(0.95);
   }
   to {
     opacity: 1;
@@ -1079,7 +1080,7 @@ select:focus {
   }
   to {
     opacity: 0;
-    transform: translateX(100%) scale(0.9);
+    transform: translateX(50px) scale(0.95);
   }
 }
 
